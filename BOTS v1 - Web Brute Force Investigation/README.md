@@ -26,8 +26,8 @@ Knew that any scan of the website would include the word "scan" in the alert/log
 
 In the scans we see that the server responded with HTTP status 200 to 2 vuln scans: one to the root directory (just loading the home page and running basic scans/parsing), and one of the IIS 8.3 shortname scan in directory.
 
-![Q1 IIS 8.3 Scan](screenshots/q1-iis-scan.png)
 ![Q1 IIS 8.3 Scan](screenshots/successfulscan.png)
+![Q1 IIS 8.3 Scan](screenshots/q1-iis-scan.png)
 
 The rest of the scans had 400/404 codes meaning the server rejected the request, but the 200 code means the server successfully responded with info to those two requests.
 
@@ -80,7 +80,7 @@ We can see in Q4 the domain but just to confirm, I added DNS to the query.
 
 **Answer: 23.22.63.114**
 
-This is asking which server had the defacement attack ready to send to the Batman web server, which we already know from #4 is 23.22.63.114 — the IP that prankglassinebracket.jumpingcrab.com resolves to.
+This is asking which server had the defacement attack ready to send to the Batman web server, which we already know from #4 is 23.22.63.114 - the IP that prankglassinebracket.jumpingcrab.com resolves to.
 
 ---
 
@@ -88,14 +88,14 @@ This is asking which server had the defacement attack ready to send to the Batma
 
 **Answer: 23.22.63.114**
 
-Knew that any login attempt will send a POST and that the form_data will include "passwd" (and that a brute force will have a high volume of them), so used this query to find count of src_IPs sending POSTs to imreallynotbatman where it was obviously 23.22.63.114 — all to the Joomla admin. 
+Knew that any login attempt will send a POST and that the form_data will include "passwd" (and that a brute force will have a high volume of them), so used this query to find count of src_IPs sending POSTs to imreallynotbatman where it was obviously 23.22.63.114 - all to the Joomla admin. 
 
 ![Q7 Brute Force IP](screenshots/q7-brute-force-ip.png)
 
 Also when looking at the one login attempt from 40.80.148.42 on the Joomla admin, we can see that it was successful and lasting as its connection_type is "keep_alive" where all of the brute force attempts are "closed." 
 
-![Q7 Brute Force IP](screenshots/q7-posts.png)
 ![Q7 Successful Login](screenshots/q7-successful-login.png)
+![Q7 Brute Force IP](screenshots/q7-posts.png)
 
 I filtered the query (adding correct password "batman" to passwd form data) to track down where the brute force finally tried the correct combo to see how it differed from the other brute force attempts, and there was no difference. All of the attempts (including the successful one from 40.80.148.42) had the HTTP code of 303 regardless of success, meaning they were redirected to another site where they were either authorized or denied.
 
@@ -108,11 +108,11 @@ I filtered the query (adding correct password "batman" to passwd form data) to t
 
 **Answer: 3791.exe**
 
-First I assumed this would have been uploaded the same way the image defaced imreallynotbatman.com — server side from being sent from the attacker web server to the Batman server, so I queried for .exe files from the Batman server to the attacker server, but didn't find anything overly suspicious. 
+First I assumed this would have been uploaded the same way the image defaced imreallynotbatman.com - server side from being sent from the attacker web server to the Batman server, so I queried for .exe files from the Batman server to the attacker server, but didn't find anything overly suspicious. 
 
 ![Q8 ExtPlorer Confirm](screenshots/q8-extplorer-confirm.png)
 
-I then deduced it must have been HTTP rather than server-side, so I queried for POST requests with .exe from the attacker IP to the Batman server (using the reasoning I was initially trying to use in Q4 — that to change the site it would require a POST from the attacker machine to the Batman web server). 
+I then deduced it must have been HTTP rather than server-side, so I queried for POST requests with .exe from the attacker IP to the Batman server (using the reasoning I was initially trying to use in Q4 - that to change the site it would require a POST from the attacker machine to the Batman web server). 
 ![Q8 ExtPlorer Confirm](screenshots/exeupload.png)
 
 Below we can confirm with the upload of the .exe with the Joomla ExtPlorer file manager reference in the HTTP referer and URL fields that the attacker did indeed gain access to the admin controls of Joomla. The .exe was likely uploaded to gain persistence/a backdoor and to automate tasks for the attack, including the GET request to the attacker server for the defacement file.
@@ -175,7 +175,7 @@ I'm actually somewhat of a coldplay fan myself, and I can think of a few of thei
 
 **Answer: batman**
 
-We know from Q7 that this is "batman" — 40.80.148.42 made only one login attempt which was successful, and filtering the brute force results to that IP confirms that:
+We know from Q7 that this is "batman" - 40.80.148.42 made only one login attempt which was successful, and filtering the brute force results to that IP confirms that:
 
 
 ![Q14 Correct Password](screenshots/q14-correct-password.png)
