@@ -155,7 +155,7 @@ Special hex code associated with customized malware: Entering the SHA256 we got 
 
 **Answer: 12345678**
 
-Odlly enough it seems like splunk changed their UI to dark mode in the middle of me doing this project! But anyways, I used the same query from Q7 to find all brute force attempts, then sorted by time to find the earliest event, then found 12345678 in the form_data field.
+Oddly enough it seems like splunk changed their UI to dark mode in the middle of me doing this project! But anyways, I used the same query from Q7 to find all brute force attempts, then sorted by time to find the earliest event, then found 12345678 in the form_data field.
 
 ![Q12 First Password](screenshots/q12-first-password.png)
 
