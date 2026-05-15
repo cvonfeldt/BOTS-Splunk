@@ -20,10 +20,17 @@ This documents an investigation into a website defacement attack against imreall
 
 **Answer: 40.80.148.42**
 
-Knew that any scan of the website would include the word "scan" in the alert/log, thought I might have to narrow it down further after but found only one source IP related, so we know it's 40.80.148.42. In the scans we see that the server responded with HTTP status 200 to 2 vuln scans: one to the root directory (just loading the home page and running basic scans/parsing), and one of the IIS 8.3 shortname scan in directory. The rest of the scans had 400/404 codes meaning the server rejected the request, but the 200 code means the server successfully responded with info to those two requests.
+Knew that any scan of the website would include the word "scan" in the alert/log, thought I might have to narrow it down further after but found only one source IP related, so we know it's 40.80.148.42. 
 
 ![Q1 Scan Detection](screenshots/q1-scan-detection.png)
+
+In the scans we see that the server responded with HTTP status 200 to 2 vuln scans: one to the root directory (just loading the home page and running basic scans/parsing), and one of the IIS 8.3 shortname scan in directory.
+
 ![Q1 IIS 8.3 Scan](screenshots/q1-iis-scan.png)
+![Q1 IIS 8.3 Scan](screenshots/successfulscan.png)
+
+The rest of the scans had 400/404 codes meaning the server rejected the request, but the 200 code means the server successfully responded with info to those two requests.
+
 
 ---
 
@@ -39,10 +46,9 @@ We can see in Q1 that the vuln scanner was made by Acunetix: "ET SCAN Acunetix A
 
 **Answer: Joomla**
 
-Knew that any POST data to the site would include the CMS, so I simply queried for POST requests to the site and we can clearly see that the CMS is Joomla.
+Knew that any POST data to the site would include the CMS, so I simply queried for POST requests (index="botsv1" POST imreallynotbatman.com) to the site and we can clearly see that the CMS is Joomla.
 
 ![Q3 CMS Joomla](screenshots/q3-cms-joomla.png)
-![Q3 Joomla Admin](screenshots/q3-joomla-admin.png)
 
 ---
 
@@ -50,10 +56,12 @@ Knew that any POST data to the site would include the CMS, so I simply queried f
 
 **Answer: poisonivy-is-coming-for-you-batman.jpeg**
 
-First I thought it would be related to a HTTP POST (assumed it was a web injection) and also assumed it would have poisonivy somewhere in it since attackers love notoriety, so I queried for poisonivy POST, but got no results. I realized they could have actually defaced the website via Joomla access, so I removed the POST filter and found the file: poisonivy-is-coming-for-you-batman.jpeg, along with confirmation that it was indeed server-side and not an HTTP injection. When removing the sourcetype filter to see Fortigate logs as well, we see the Batman web server reaching out to the jumpingcrab server at 23.22.63.114 for the defacement file.
-
+First I thought it would be related to a HTTP POST (assumed it was a web injection) and also assumed it would have "poisonivy" somewhere in it since attackers love notoriety, so I queried for poisonivy POST, but got no results. I realized they could have actually defaced the website via Joomla access, so I removed the POST filter and found the file: poisonivy-is-coming-for-you-batman.jpeg, along with confirmation that it was indeed server-side and not an HTTP injection. 
 
 ![Q4 Defacement File](screenshots/q4-defacement-file.png)
+
+When removing the sourcetype filter to see Fortigate logs as well, we see the Batman web server reaching out to the jumpingcrab server at 23.22.63.114 for the defacement file.
+
 ![Q4 Fortigate Log](screenshots/q4-fortigate-log.png)
 
 ---
@@ -64,7 +72,6 @@ First I thought it would be related to a HTTP POST (assumed it was a web injecti
 
 We can see in Q4 the domain but just to confirm, I added DNS to the query.
 
-
 ![Q5 FQDN](screenshots/q5-fqdn.png)
 
 ---
@@ -73,7 +80,7 @@ We can see in Q4 the domain but just to confirm, I added DNS to the query.
 
 **Answer: 23.22.63.114**
 
-This is asking which server had the defacement attack ready to send to the Batman web server, which we already know from Q4 is 23.22.63.114 — the IP that prankglassinebracket.jumpingcrab.com resolves to.
+This is asking which server had the defacement attack ready to send to the Batman web server, which we already know from #4 is 23.22.63.114 — the IP that prankglassinebracket.jumpingcrab.com resolves to.
 
 ---
 
@@ -81,11 +88,19 @@ This is asking which server had the defacement attack ready to send to the Batma
 
 **Answer: 23.22.63.114**
 
-Knew that any login attempt will send a POST and that the form_data will include "passwd" (and that a brute force will have a high volume of them), so used this query to find count of src_IPs sending POSTs to imreallynotbatman where it was obviously 23.22.63.114 — all to the Joomla admin. Also when looking at the one login attempt from 40.80.148.42 on the Joomla admin, we can see that it was successful and lasting as its connection_type is "keep_alive" where all of the brute force attempts are "closed." I filtered the query (adding correct password "batman" to passwd form data) to track down where the brute force finally tried the correct combo to see how it differed from the other brute force attempts, and there was no difference. All of the attempts (including the successful one from 40.80.148.42) had the HTTP code of 303, meaning they were redirected to another site where they were either authorized or denied.
-
+Knew that any login attempt will send a POST and that the form_data will include "passwd" (and that a brute force will have a high volume of them), so used this query to find count of src_IPs sending POSTs to imreallynotbatman where it was obviously 23.22.63.114 — all to the Joomla admin. 
 
 ![Q7 Brute Force IP](screenshots/q7-brute-force-ip.png)
+
+Also when looking at the one login attempt from 40.80.148.42 on the Joomla admin, we can see that it was successful and lasting as its connection_type is "keep_alive" where all of the brute force attempts are "closed." 
+
+![Q7 Brute Force IP](screenshots/q7-posts.png)
 ![Q7 Successful Login](screenshots/q7-successful-login.png)
+
+I filtered the query (adding correct password "batman" to passwd form data) to track down where the brute force finally tried the correct combo to see how it differed from the other brute force attempts, and there was no difference. All of the attempts (including the successful one from 40.80.148.42) had the HTTP code of 303 regardless of success, meaning they were redirected to another site where they were either authorized or denied.
+
+![Q7 Successful Login](screenshots/303code.png)
+
 
 ---
 
@@ -93,10 +108,16 @@ Knew that any login attempt will send a POST and that the form_data will include
 
 **Answer: 3791.exe**
 
-First I assumed this would have been uploaded the same way the image defaced imreallynotbatman.com — server side from being sent from the attacker web server to the Batman server, so I queried for .exe files from the Batman server to the attacker server, but didn't find anything suspicious. I then deduced it must have been HTTP rather than server-side, so I queried for POST requests with .exe from the attacker IP to the Batman server (using the reasoning I was initially trying to use in Q4 — that to change the site it would require a POST from the attacker machine to the Batman web server). In this we can confirm with the upload of the .exe with the Joomla ExtPlorer file manager reference in the HTTP referer and URL fields that the attacker did indeed gain access to the admin controls of Joomla. The .exe was likely uploaded to gain persistence/a backdoor and to automate tasks for the attack, including the GET request to the attacker server for the defacement file.
+First I assumed this would have been uploaded the same way the image defaced imreallynotbatman.com — server side from being sent from the attacker web server to the Batman server, so I queried for .exe files from the Batman server to the attacker server, but didn't find anything overly suspicious. 
+
+![Q8 ExtPlorer Confirm](screenshots/q8-extplorer-confirm.png)
+
+I then deduced it must have been HTTP rather than server-side, so I queried for POST requests with .exe from the attacker IP to the Batman server (using the reasoning I was initially trying to use in Q4 — that to change the site it would require a POST from the attacker machine to the Batman web server). 
+![Q8 ExtPlorer Confirm](screenshots/exeupload.png)
+
+Below we can confirm with the upload of the .exe with the Joomla ExtPlorer file manager reference in the HTTP referer and URL fields that the attacker did indeed gain access to the admin controls of Joomla. The .exe was likely uploaded to gain persistence/a backdoor and to automate tasks for the attack, including the GET request to the attacker server for the defacement file.
 
 ![Q8 Executable Upload](screenshots/q8-executable-upload.png)
-![Q8 ExtPlorer Confirm](screenshots/q8-extplorer-confirm.png)
 
 ---
 
@@ -104,8 +125,7 @@ First I assumed this would have been uploaded the same way the image defaced imr
 
 **Answer: AAE3F5A29935E6ABCC2C2754D12A9AF0**
 
-To find this, I knew I would need to search for the MD5 where 3791.exe was the process, so I queried for 3791.exe in the Sysmon logs, but found that obviously included processes like image loads and process terminations which all have their own unique MD5s. I knew I needed the original process creation (EventCode=1) where the child is 3791.exe and the parent is cmd.exe, and found the MD5 of AAE3F5A29935E6ABCC2C2754D12A9AF0.
-
+To find this, I knew I would need to search for the MD5 where 3791.exe was the process, so I queried for 3791.exe in the Sysmon logs, but found that obviously included processes like image loads and process terminations which all have their own unique MD5s. I knew I needed the original process creation (EventCode=1) where the child is 3791.exe and the parent is cmd.exe, and found the correct MD5 of AAE3F5A29935E6ABCC2C2754D12A9AF0.
 
 ![Q9 MD5 Hash](screenshots/q9-md5-hash.png)
 
@@ -113,7 +133,7 @@ To find this, I knew I would need to search for the MD5 where 3791.exe was the p
 
 ### Q10: GCPD reported that common TTPs (Tactics, Techniques, Procedures) for the Po1s0n1vy APT group, if initial compromise fails, is to send a spear phishing email with custom malware attached to their intended target. This malware is usually connected to Po1s0n1vys initial attack infrastructure. Using research techniques, provide the SHA256 hash of this malware.
 
-**Answer: (your SHA256 here)**
+**Answer: (9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8)**
 
 Had to go outside of Splunk to get this one since this malware was on the attacker's server and was never transmitted over the network. Went to ThreatMiner and searched for the attacking server IP 23.22.63.114, found an MD5 associated with it, which when clicking the hyperlink led to the SHA256 hash of the associated malware sample.
 
@@ -123,9 +143,9 @@ Had to go outside of Splunk to get this one since this malware was on the attack
 
 ### Q11: What special hex code is associated with the customized malware discussed in question 111?
 
-**Answer: (your hex code here)**
+**Answer: (53 74 65 76 65 20 42 72 61 6e 74 27 73 20 42 65 61 72 64 20 69 73 20 61 20 70 6f 77 65 72 66 75 6c 20 74 68 69 6e 67 2e 20 46 69 6e 64 20 74 68 69 73 20 6d 65 73 73 61 67 65 20 61 6e 64 20 61 73 6b 20 68 69 6d 20 74 6f 20 62 75 79 20 79 6f 75 20 61 20 62 65 65 72 21 21 21 )**
 
-Entered the SHA256 from Q10 into VirusTotal. One of the comments contained the hex code associated with the customized malware.
+Special hex code associated with customized malware: Entering the SHA256 we got from #10 into virustotal.com, one of the comments so graciously commented the hex code!
 
 ![Q11 VirusTotal](screenshots/q11-virustotal.png)
 
@@ -135,7 +155,7 @@ Entered the SHA256 from Q10 into VirusTotal. One of the comments contained the h
 
 **Answer: 12345678**
 
-Used the same query from Q7 to find all brute force attempts, then sorted by time to find the earliest event, then found 12345678 in the form_data field.
+Odlly enough it seems like splunk changed their UI to dark mode in the middle of me doing this project! But anyways, I used the same query from Q7 to find all brute force attempts, then sorted by time to find the earliest event, then found 12345678 in the form_data field.
 
 ![Q12 First Password](screenshots/q12-first-password.png)
 
@@ -145,7 +165,7 @@ Used the same query from Q7 to find all brute force attempts, then sorted by tim
 
 **Answer: yellow**
 
-Being somewhat of a Coldplay fan myself, I could think of a few popular songs that are 6 letters: "clocks", "sparks", "yellow", and "fix you" (7 with the space). Using a query to find all 6 letter passwords in the brute force, yellow appeared confirming it as the answer.
+I'm actually somewhat of a coldplay fan myself, and I can think of a few of their popular songs that are 6 letters off the top of my head, including "clocks", "sparks", "yellow", and "fix you," but "fix you" would be 7 characters with the space. Knowing these songs, I used this query to find all 6 letter passwords in the bruteforce, and if any of them were clocks, yellow, or sparks, they would appear at the top of the table. Luckily it turned out to be yellow, so my search ended there!
 
 ![Q13 Yellow Password](screenshots/q13-yellow-password.png)
 
@@ -155,7 +175,7 @@ Being somewhat of a Coldplay fan myself, I could think of a few popular songs th
 
 **Answer: batman**
 
-We know from Q7 that this is "batman" — 40.80.148.42 made only one login attempt which was successful, and filtering the brute force results to that IP reveals the password used.
+We know from Q7 that this is "batman" — 40.80.148.42 made only one login attempt which was successful, and filtering the brute force results to that IP confirms that:
 
 
 ![Q14 Correct Password](screenshots/q14-correct-password.png)
@@ -166,10 +186,14 @@ We know from Q7 that this is "batman" — 40.80.148.42 made only one login attem
 
 **Answer: 6.175**
 
-First was trying the query with raw log data for the field type in the rex and was getting weird lengths (20-40 characters) and in turn a skewed average length. After printing the passwords in a table I saw extra characters being captured from non form_data fields where the password didn't cease after & or whitespace. Once I specified form_data I got the correct average of approximately 6.175 characters per password.
+First was trying the query with raw log data for the field type in the rex and was getting weird lengths (20-40 characters) and in turn a skewed average length. After printing the passwords in a table I saw extra characters being captured from non form_data fields where the password didn't cease after & or whitespace. 
 
-![Q15 Average Length](screenshots/q15-average-length.png)
+![Q15 Rex Fix](screenshots/q15-rex-wrong.png)
+
+Once I specified form_data I got the correct average of approximately 6.175 characters per password.
+
 ![Q15 Rex Fix](screenshots/q15-rex-fix.png)
+![Q15 Average Length](screenshots/q15-average-length.png)
 
 ---
 
@@ -177,9 +201,12 @@ First was trying the query with raw log data for the field type in the rex and w
 
 **Answer: 92.17 seconds**
 
-Went simple here and just found the moment of compromised login with the only attempt from 40.80.148.42 (9:48:05.858 PM), then took the time that the web server found the batman password via brute force (9:46:33.689 PM), and simply subtracted to get 92.17 seconds.
+Went simple here and just found the moment of compromised login with the only attempt from 40.80.148.42 (9:48:05.858 PM), 
 
 ![Q16 Compromised Login Time](screenshots/q16-compromised-login.png)
+
+Then took the time that the web server found the batman password via brute force (9:46:33.689 PM), and simply subtracted to get 92.17 seconds.
+
 ![Q16 Brute Force Time](screenshots/q16-brute-force-time.png)
 
 ---
