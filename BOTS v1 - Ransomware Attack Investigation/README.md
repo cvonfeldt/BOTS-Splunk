@@ -210,9 +210,15 @@ explorer.exe
             └── 121214.tmp
                 └── Network connections to malicious infrastructure
                     └── File encryption activity
+````
 
+This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
 
+The large `ParentCommandLine` field identified in Question 5 (4490 characters) also suggests possible script obfuscation or encoded payload execution.
 
+---
+
+## MITRE ATT&CK Mapping
 
 | Attack Activity                                    | MITRE Technique                     | ID        |
 | -------------------------------------------------- | ----------------------------------- | --------- |
@@ -224,6 +230,29 @@ explorer.exe
 | Malware execution through trusted Windows binaries | Signed Binary Proxy Execution       | T1218     |
 | Download of `mhtr.jpg` payload                     | Ingress Tool Transfer               | T1105     |
 | Hidden payload inside `.jpg`                       | Steganography                       | T1027.003 |
+| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
+| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
+| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
+
+---
+
+## Detection Engineering Notes
+
+Several strong behavioral indicators were identified during the investigation:
+
+* Microsoft Office spawning command interpreters
+* `cmd.exe` spawning `wscript.exe`
+* Execution of `.tmp` payloads
+* Script execution with extremely long command-line arguments
+* SMB write activity spikes to a file server
+* File modification bursts followed by ransom-note creation
+* DNS requests to suspicious external infrastructure immediately after encryption
+
+These behaviors are significantly more resilient detection opportunities than static indicators such as hashes, filenames, or IP addresses because attackers can easily modify those artifacts between campaigns.
+
+```
+```
+
 | SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
 | Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
 | Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
