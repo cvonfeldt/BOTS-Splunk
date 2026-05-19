@@ -35,6 +35,8 @@ w3wp.exe (IIS Worker Process / Joomla Context)
             └── Network connection to prankglassinebracket.jumpingcrab.com
                 └── poisonivy-is-coming-for-you-batman.jpeg downloaded
 
+```
+
 ## MITRE ATT&CK Mapping
 
 | Attack Activity | MITRE Technique | ID |
