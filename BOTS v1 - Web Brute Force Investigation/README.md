@@ -51,17 +51,15 @@ w3wp.exe (IIS Worker Process / Joomla Context)
 
 ---
 
-## Detection Engineering Notes
+## Detection Opportunities
 
-Several strong behavioral indicators were identified during the investigation:
+Several strong behavioral indicators were identified during the investigation that rules could potentially detect:
 
-- IIS Worker Process (`w3wp.exe`) spawning a command shell (`cmd.exe` or `powershell.exe`)
-- Web server daemon launching binaries out of public web roots (i.e. `/media/`, `/uploads/`, `/tmp/`)
-- Inbound high volume `HTTP POST` volume spikes targeted at application login endpoints (`/administrator/`)
-- Repeated `HTTP 303` redirection status codes followed by a sudden structural change in user session behavior (`Keep-Alive` transition)
-- Host initiating unexpected outbound HTTP connections to unverified Dynamic DNS domains (like `jumpingcrab.com`)
-
-Focusing detection logic around these native system behaviors rather than static Indicators of Compromise (such as the specific MD5 hash of `3791.exe` or the attacker's temporary scanning IP) ensures the SOC maintains a durable defense that cannot be easily bypassed by simple recompilation or proxy shifting.
+- Rule: Alert when w3wp.exe or any IIS worker process spawns cmd.exe or powershell.exe
+- Rule: Alert on >10 HTTP POSTs per minute from a single IP to any /administrator/ or login endpoint
+- Rule: Flag source IPs whose connection_type transitions from "closed" to "keep_alive" on a login endpoint — indicates a successful auth after prior failures
+- Rule: Alert on any web server process initiating outbound HTTP connections to dynamic DNS domains (*.jumpingcrab.com, *.no-ip.org, etc.)
+- Rule: Alert on executable files (.exe) being uploaded via HTTP POST to a web application directory
 
 ---
 
@@ -143,7 +141,7 @@ Knew that any login attempt will send a POST and that the form_data will include
 
 ![Q7 Brute Force IP](screenshots/q7-brute-force-ip.png)
 
-Also when looking at the one login attempt from 40.80.148.42 on the Joomla admin, we can see that it was successful and lasting as its connection_type is "keep_alive" where all of the brute force attempts are "closed." 
+Also when looking at the one login attempt from 40.80.148.42 (not the brute force source, but the machine that used the successful credentials eventually) on the Joomla admin, we can see that it was successful and lasting as its connection_type is "keep_alive" where all of the brute force attempts are "closed." 
 
 ![Q7 Successful Login](screenshots/q7-successful-login.png)
 ![Q7 Brute Force IP](screenshots/q7-posts.png)
@@ -272,6 +270,20 @@ Took all of the brute force attempts excluding the successful one from 40.80.148
 
 ---
 
+
+## Attack Timeline Summary
+
+| Time | Event |
+|------|-------|
+| Pre-attack | 40.80.148.42 scans imreallynotbatman.com using Acunetix; server returns HTTP 200 to 2 scans |
+| Pre-attack | 23.22.63.114 begins brute force against /administrator/ Joomla login endpoint |
+| 21:46:33 | Brute force identifies correct password: "batman" |
+| 21:48:05 | 40.80.148.42 logs in with correct credentials (connection_type flips to keep_alive, 92.17s after password found) |
+| Post-login | 3791.exe uploaded to web server via Joomla ExtPlorer file manager |
+| Post-login | Web server (192.168.250.70) makes outbound GET to prankglassinebracket.jumpingcrab.com (23.22.63.114) |
+| Post-login | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
+
+
 ## Key Indicators of Compromise (IOCs)
 
 | Indicator | Value |
@@ -287,9 +299,4 @@ Took all of the brute force attempts excluding the successful one from 40.80.148
 | Compromised admin password | batman |
 
 ## Detection Summary
-The investigation revealed a multi-stage attack against imreallynotbatman.com:
-- Po1s0n1vy used Acunetix to scan for vulnerabilities and identify the Joomla CMS
-- A brute force attack against the Joomla admin panel from 23.22.63.114 successfully identified the weak password "batman"
-- The attacker logged in from 40.80.148.42 and uploaded a malicious executable (3791.exe) via the ExtPlorer file manager
-- The compromised web server was made to fetch a defacement image from the attacker's hosting infrastructure
-- Suricata and Fortigate both detected malicious activity but allowed it due to misconfigured policies
+The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
