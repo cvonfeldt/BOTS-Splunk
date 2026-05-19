@@ -22,6 +22,61 @@ This documents an investigation into a Cerber ransomware attack targeting Bob Sm
 
 **Data Sources Used:** Suricata, Fortigate (fgt_utm), XmlWinEventLog:Microsoft-Windows-Sysmon/Operational, WinRegistry, stream:dns
 
+
+# Process Lineage & MITRE ATT&CK Analysis
+
+## Process Lineage
+
+The Cerber ransomware attack followed a suspicious parent-child process chain that is highly indicative of malware execution and script-based payload delivery.
+
+```text
+explorer.exe
+└── winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
+    └── cmd.exe
+        └── wscript.exe
+            └── 121214.tmp
+                └── Network connections to malicious infrastructure
+                    └── File encryption activity
+````
+
+This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
+
+The large `ParentCommandLine` field identified in Question 5 (4490 characters) also suggests possible script obfuscation or encoded payload execution.
+
+---
+
+## MITRE ATT&CK Mapping
+
+| Attack Activity                                    | MITRE Technique                     | ID        |
+| -------------------------------------------------- | ----------------------------------- | --------- |
+| USB-delivered infection vector                     | Replication Through Removable Media | T1091     |
+| User opens malicious `.dotm` document              | User Execution: Malicious File      | T1204.002 |
+| Macro/VBScript execution                           | Visual Basic                        | T1059.005 |
+| `cmd.exe` launching `wscript.exe`                  | Command and Scripting Interpreter   | T1059     |
+| Large obfuscated VBScript execution                | Obfuscated Files or Information     | T1027     |
+| Malware execution through trusted Windows binaries | Signed Binary Proxy Execution       | T1218     |
+| Download of `mhtr.jpg` payload                     | Ingress Tool Transfer               | T1105     |
+| Hidden payload inside `.jpg`                       | Steganography                       | T1027.003 |
+| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
+| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
+| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
+
+---
+
+## Detection Engineering Notes
+
+Several strong behavioral indicators were identified during the investigation:
+
+* Microsoft Office spawning command interpreters
+* `cmd.exe` spawning `wscript.exe`
+* Execution of `.tmp` payloads
+* Script execution with extremely long command-line arguments
+* SMB write activity spikes to a file server
+* File modification bursts followed by ransom-note creation
+* DNS requests to suspicious external infrastructure immediately after encryption
+
+These behaviors are significantly more resilient detection opportunities than static indicators such as hashes, filenames, or IP addresses because attackers can easily modify those artifacts between campaigns.
+
 ---
 
 ## Investigation
@@ -196,57 +251,4 @@ For this one we know that Bob's machine would have to make a connection to downl
 
 ---
 
-# Process Lineage & MITRE ATT&CK Analysis
-
-## Process Lineage
-
-The Cerber ransomware attack followed a suspicious parent-child process chain that is highly indicative of malware execution and script-based payload delivery.
-
-```text
-explorer.exe
-└── winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
-    └── cmd.exe
-        └── wscript.exe
-            └── 121214.tmp
-                └── Network connections to malicious infrastructure
-                    └── File encryption activity
-````
-
-This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
-
-The large `ParentCommandLine` field identified in Question 5 (4490 characters) also suggests possible script obfuscation or encoded payload execution.
-
----
-
-## MITRE ATT&CK Mapping
-
-| Attack Activity                                    | MITRE Technique                     | ID        |
-| -------------------------------------------------- | ----------------------------------- | --------- |
-| USB-delivered infection vector                     | Replication Through Removable Media | T1091     |
-| User opens malicious `.dotm` document              | User Execution: Malicious File      | T1204.002 |
-| Macro/VBScript execution                           | Visual Basic                        | T1059.005 |
-| `cmd.exe` launching `wscript.exe`                  | Command and Scripting Interpreter   | T1059     |
-| Large obfuscated VBScript execution                | Obfuscated Files or Information     | T1027     |
-| Malware execution through trusted Windows binaries | Signed Binary Proxy Execution       | T1218     |
-| Download of `mhtr.jpg` payload                     | Ingress Tool Transfer               | T1105     |
-| Hidden payload inside `.jpg`                       | Steganography                       | T1027.003 |
-| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
-| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
-| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
-
----
-
-## Detection Engineering Notes
-
-Several strong behavioral indicators were identified during the investigation:
-
-* Microsoft Office spawning command interpreters
-* `cmd.exe` spawning `wscript.exe`
-* Execution of `.tmp` payloads
-* Script execution with extremely long command-line arguments
-* SMB write activity spikes to a file server
-* File modification bursts followed by ransom-note creation
-* DNS requests to suspicious external infrastructure immediately after encryption
-
-These behaviors are significantly more resilient detection opportunities than static indicators such as hashes, filenames, or IP addresses because attackers can easily modify those artifacts between campaigns.
 
