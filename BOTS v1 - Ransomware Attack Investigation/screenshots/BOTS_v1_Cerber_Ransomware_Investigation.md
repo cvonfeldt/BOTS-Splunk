@@ -1,0 +1,217 @@
+# 02 - Boss of the SOC (BOTS) v1 - Cerber Ransomware Investigation
+
+## Overview
+
+This documents an investigation into a Cerber ransomware attack targeting Bob Smith's workstation (`we8105desk`) at Wayne Enterprises. The attack involved an initial infection via a malicious macro document, VBScript execution, lateral movement to a file server, and full file encryption. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, Sysmon, and WinRegistry logs.
+
+## Lab Environment
+
+| Role | Details |
+|------|---------|
+| SIEM | Splunk (BOTS v1 dataset) |
+| Victim Workstation | we8105desk (192.168.250.100) |
+| Victim User | Bob Smith (bob.smith) |
+| File Server | we9041srv |
+| Initial Infection Vector | Miranda_Tate_unveiled.dotm (via USB) |
+| Malware Family | Cerber Ransomware |
+
+**Data Sources Used:** Suricata, Fortigate (fgt_utm), XmlWinEventLog:Microsoft-Windows-Sysmon/Operational, WinRegistry, stream:dns
+
+---
+
+## Screenshots
+
+All screenshots are stored in the `screenshots/` folder in this directory. The table below maps each file to its question and context.
+
+| Filename | Question | Description |
+|----------|----------|-------------|
+| `q1_src_ip_query.png` | Q1 | src_ip frequency across all events |
+| `q1_network_tag_ip.png` | Q1 | Network tag confirming IP association to we8105desk |
+| `q2_suricata_signature_id.png` | Q2 | Suricata alert.signature_id sorted by count |
+| `q3_decrypt_files_event.png` | Q3 | EventCode 1 showing DECRYPT MY FILES #.txt at 17:15:11 |
+| `q3_cerber_dns_domain.png` | Q3 | DNS request to cerberhhyed5frqa.xmfir0.win 1.688s post-encryption |
+| `q4_dns_filtered_results.png` | Q4 | DNS results filtered, non-standard extensions prioritized |
+| `q4_solidarite_get_requests.png` | Q4 | GET requests to solidaritedeproximite.org showing French content |
+| `q4_fortigate_honeypot_flag.png` | Q4 | Fortigate honeypot-access flag on solidaritedeproximite.org |
+| `q5_initial_7_events.png` | Q5 | Initial query returning 7 events with .vbs and .exe |
+| `q5_parentcommandline_event.png` | Q5 | Third event containing VBScript ParentCommandLine field |
+| `q5_cmdexe_parent_comparison.png` | Q5 | Comparison showing correct cmd.exe parent vs other process |
+| `q6_registry_key_name.png` | Q6 | registry_key_name field results listing USB details |
+| `q6_miranda_pri_confirmed.png` | Q6 | wudf.exe SetValue event with MIRANDA_PRI confirming USB name |
+| `q7_port_query.png` | Q7 | Port query setup filtering SMB/NetBIOS from we8105desk |
+| `q7_fileserver_ip_results.png` | Q7 | Results showing single dest_IP across NetBIOS and SMB events |
+| `q8_fileserver_encrypted_files.png` | Q8 | we9041srv file access events showing append/write permissions granted |
+| `q10_txt_files_two_sourcetypes.png` | Q10 | .txt file events showing two sourcetypes |
+| `q10_bobsmith_txt_filtered.png` | Q10 | Query filtered to bob.smith directory path confirming .txt files |
+
+---
+
+## Investigation
+
+### Q1: What was the most likely IPv4 address of we8105desk on 24AUG2016?
+
+**Answer: `192.168.250.100`**
+
+The first thing I did was change the date range in the top right to the spanning from beginning of august 24th 2016 to the end of august 25th 2016. Then I queried overall events where the host was we8105desk and what the src_ip was associated with each one. I found that there were an overwhelming amount of 192.168.250.100 compared to the other source IPs, which is typical for a workstation to have many more outgoing requests/connections than inbound.
+
+![Q1 - src_ip frequency across all events](screenshots/q1_src_ip_query.png)
+
+On top of that, we are now dealing with windows OS and files rather than a webserver attack, so it would help to filter to a network transmission or some kind of communication for the IP to be stated in an event. So then I changed the tag event type to "network," which clearly displayed the association of the IP of 192.168.250.100 to the host of we8105desk.
+
+![Q1 - Network tag confirming IP association to we8105desk](screenshots/q1_network_tag_ip.png)
+
+---
+
+### Q2: Amongst the Suricata signatures that detected the Cerber malware, which one alerted the fewest number of times? Submit ONLY the signature ID value as the answer.
+
+**Answer: `2816763`**
+
+So for this one I first just queried results including cerber, and the sourcetype of suricata. Then I saw on the side bar there was an alert.signature_id which is exactly what we wanted to answer this question, so I sorted the number of signature occurrences and found that 2816763 was the least occurring alert with only 1.
+
+![Q2 - Suricata alert.signature_id sorted by count](screenshots/q2_suricata_signature_id.png)
+
+---
+
+### Q3: What fully qualified domain name (FQDN) does the Cerber ransomware attempt to direct the user to at the end of its encryption phase?
+
+**Answer: `cerberhhyed5frqa.xmfir0.win`**
+
+In the intro context given, we know that Bob's files are all inaccessible and the recording states that all of his "documents, databases, photos, and other important files" have been encrypted. We want to find the time that the files were encrypted, so assuming the attacker didn't gain admin privileges before encrypting anything, we can query under Bob's user account on his host machine for Sysmon files with the event codes 1, 11, or 21. 1 for process creation if attacker opened another app to aid in the attack, 11 if the attacker created new files to place the encrypted info in, or modified the files to overwrite the original info with the encrypted info in original file, and 21 for if he deleted any of Bob's files. I figured for sure that EventCode 11 would show up after the encryptions... it did not, but after filtering further with ".txt" luckily we did find an encrypted file in an event with a code 1 as we can see: "DECRYPT MY FILES #.txt". at 5:15:11.000 PM.
+
+![Q3 - EventCode 1 showing DECRYPT MY FILES #.txt at 17:15:11](screenshots/q3_decrypt_files_event.png)
+
+Now filtering the time range to after 5:15:11.000 PM, we can search for dns request from Bob's host machine. Since we know this is will be a DNS request resolving a domain name to IP4, adding `tag::eventtype=dns` as well as `record_type=A` helps us to narrow down the results. Sorting the events to start immediately after the files were encrypted, we see a suspicious domain name in a request in the second listed event just 1.688 seconds after the file encryption. It's safe to assume that this is the domain cerber malware is attempting to direct the user to at the end of the encryption phase: `cerberhhyed5frqa.xmfir0.win`
+
+![Q3 - DNS request to cerberhhyed5frqa.xmfir0.win 1.688s post-encryption](screenshots/q3_cerber_dns_domain.png)
+
+---
+
+### Q4: What was the first suspicious domain visited by we8105desk on 24AUG2016?
+
+**Answer: `solidaritedeproximite.org`**
+
+For this the first thing I did was change the date/time range back to the very beginning of August 24th 2016, then queried very similarly to #3 with `tag::eventtype=dns record_type=A` from Bob's infected machine, still including `sort _time` because we want to find the first malicious domain visited that day. It returned 43 events but I'm not seeing anything malicious yet, going to quickly filter the query down further to prioritize results that don't have traditional trustworthy domain extensions (.com, & .net to start).
+
+![Q4 - DNS results filtered, non-standard extensions prioritized](screenshots/q4_dns_filtered_results.png)
+
+The first few are just WPAD (web proxy auto discovery) and Microsoft domains, which we know shouldn't be malicious. Then at 16:48:12.267 we see a domain called `solidaritedeproximite.org`, which when doing a little more digging into the GET requests to the server, we see it appears to be a French-located server, or at least written in French, which is pretty unusual for a host machine at wayne enterprises to be sending requests to.
+
+![Q4 - GET requests to solidaritedeproximite.org showing French content](screenshots/q4_solidarite_get_requests.png)
+
+Changing the sourcetype to fortigate logs (fgt_utm), we can see that the server is indeed located in France is a big red flag, and we see something even more important confirming suspicions: that fortigate has flagged this as a domain from its honeypot-access list, meaning it's been associated with malicious activity and flagged in the past. This definitely appears to be the first malicious FQDN that we8105desk visited that day.
+
+![Q4 - Fortigate honeypot-access flag on solidaritedeproximite.org](screenshots/q4_fortigate_honeypot_flag.png)
+
+---
+
+### Q5: During the initial Cerber infection a VB script is run. The entire script from this execution, pre-pended by the name of the launching .exe, can be found in a field in Splunk. What is the length of the value of this field?
+
+**Answer: `4490`**
+
+My initial thoughts with this is that we know there is a process being created on our infected machine of we8105desk, so we can set our host to that and start our search with Sysmon logs with eventcode 1. Also we can include ".vbs" and ".exe" in the query since we know that both are apparently in a field in splunk that we need to find the length of. First I'll just simply throw them in a query and if I need to be more specific I'll throw them in a rex command.
+
+![Q5 - Initial query returning 7 events with .vbs and .exe](screenshots/q5_initial_7_events.png)
+
+This only returned 7 events, and the third event appears to contain the script info we are looking for. Also the time of the event was 4:43:21.000 PM which lines up around when we would expect the initial infection to have occurred as it was about 32 mins before the encryptions were complete and about 5 mins before the host started to visit malicious sites.
+
+![Q5 - Third event containing VBScript ParentCommandLine field](screenshots/q5_parentcommandline_event.png)
+
+It looks like our field that we want to find the length of is `ParentCommandLine`, which makes complete sense that this is how the process was created. We see two similar events here both containing what looks to be similar vb scripts, but we want the one whose parent process is actually cmd.exe since that's where the process was started.
+
+![Q5 - Comparison showing correct cmd.exe parent vs other process](screenshots/q5_cmdexe_parent_comparison.png)
+
+Now that we have all of that sorted we can simply modify the query to find the length of the `ParentCommandLine` field and we get **4490 chars**.
+
+---
+
+### Q6: What is the name of the USB key inserted by Bob Smith?
+
+**Answer: `MIRANDA_PRI`**
+
+For this one I first tried to find the name of the drive in an event from WinRegistry source, and then got more specific results when I included "USB" in my search as well. I sorted by time to see when the first USB related event from WinRegistry occurred. We can see here that the registrytype is "CreateKey". I figured the key that was created and associated could come in handy in tracking it. I found what I think is the key — it doesn't say explicitly but within both the field path and registry name path, we can see a process ID and some numbers/chars: `PID_6387#7D961196#{a5dcbf10-6530-11d2-901f-00c04fb951ed}`.
+
+I noticed a field called `registry_key_name` and looked at the results — this caught my eye as it seems like it lists more about the USB itself in human readable form.
+
+![Q6 - registry_key_name field results listing USB details](screenshots/q6_registry_key_name.png)
+
+I figured that sounds like it would list the USB name or get us closer, so added that to the query. It only returned 7 results so I was able to go through each event, and in just the second event I can see that the "key_path" is in `\friendlyname` which sounds like it could mean human readable, and its data is `MIRANDA_PRI`. We know that the file that Bob initially opened at the start of the attack was called `Miranda_Tate_unveiled.dotm`, so it seems like this is it!
+
+Removing the registry key name filter and adding MIRANDA_PRI to our query (to see more events related to it) we see another event with the process image of `/wudf.exe` (looked it up and this is a windows process that manages external drivers like USB and other external drives) with `registry_type="SetValue"` and also has MIRANDA_PRI as its data. That confirms it, and lines up perfectly timing-wise with the rest of the attack timeline/details.
+
+![Q6 - wudf.exe SetValue event with MIRANDA_PRI confirming USB name](screenshots/q6_miranda_pri_confirmed.png)
+
+---
+
+### Q7: Bob Smith's workstation (we8105desk) was connected to a file server during the ransomware outbreak. What is the IPv4 address of the file server?
+
+**Answer: `192.168.250.20`**
+
+For this one I know any file transfer would include ports 20, 21 (both ftp), 22 (sftp), 139 (NetBIOS - less likely), or 445 (SMB - more likely than NetBIOS), so I added all of them to my query as the dest_port with src_ip being bob's machine and changed the time to span between when the USB was plugged in and the end of the encryption phase.
+
+![Q7 - Port query setup filtering SMB/NetBIOS from we8105desk](screenshots/q7_port_query.png)
+
+The events returned were only ports NetBIOS and SMB, and the only dest_IP was the one we earlier found to be assigned to the DNS server, but that makes sense since smaller businesses/networks often have the same machine for DNS/SMB and other services.
+
+![Q7 - Results showing single dest_IP across NetBIOS and SMB events](screenshots/q7_fileserver_ip_results.png)
+
+---
+
+### Q8: How many distinct PDFs did the ransomware encrypt on the remote file server?
+
+**Answer: `257`**
+
+Now that I know the IP of the file server, I can find out the name of the machine in sysmon logs which we can see is `we9041srv`. Now I can filter to that host to see the files changed on that actual device. Here we can see that all of the files have been granted to append, write, and/or add data to files, so we can assume these are the ones encrypted.
+
+![Q8 - we9041srv file access events showing append/write permissions granted](screenshots/q8_fileserver_encrypted_files.png)
+
+I can now just find the distinct counts of relative target names to find unique files (since the same pdfs are involved in multiple events i.e. adds, edits, deletions).
+
+---
+
+### Q9: The VBscript found in question 5 launches 121214.tmp. What is the ParentProcessId of this initial launch?
+
+**Answer: `3968`**
+
+For this one we know from #5 that the script that launches the 121214.tmp file is called Wscript.exe, so simply looking up these two in a query with Sysmon eventID=1 since it created a process, we can see the `ParentProcessID=3968`.
+
+---
+
+### Q10: The Cerber ransomware encrypts files located in Bob Smith's Windows profile. How many .txt files does it encrypt?
+
+**Answer: `406`**
+
+Using the same logic as #8, we just want to filter to see all .txt files associated with bob.smith account during the attack. We see that again these files were all granted access to be changed, unlike #8 though, there are two sourcetypes this time so we need to filter to just one, so we will go with Sysmon.
+
+![Q10 - .txt file events showing two sourcetypes](screenshots/q10_txt_files_two_sourcetypes.png)
+
+We can see all but one of these have eventcode 2 for a timestamp change (typical sign of attack), so these definitely seem like the .txt files we are looking for. Just to make sure it's under Bob's account I'll add his user's directory path to the query.
+
+![Q10 - Query filtered to bob.smith directory path confirming .txt files](screenshots/q10_bobsmith_txt_filtered.png)
+
+And to make sure there are no duplicates, we use `dc` and see there are indeed **406** different text files encrypted.
+
+---
+
+### Q11: The malware downloads a file that contains the Cerber ransomware cryptor code. What is the name of that file?
+
+**Answer: `mhtr.jpg`**
+
+For this one we know that Bob's machine would have to make a connection to download the file, and we know from #4 that the first malicious domain he visited was `solidaritedeproximite.org`, so that's a great place to start. With a quick query we can actually see that the download was included in the fortigate file we saw earlier: `mhtr.jpg`
+
+---
+
+### Q12: Now that you know the name of the ransomware's encryptor file, what obfuscation technique does it likely use?
+
+**Answer: Steganography - code inside an image file.**
+
+---
+
+## Attack Timeline Summary
+
+| Time (24AUG2016) | Event |
+|------------------|-------|
+| ~16:43 | USB (`MIRANDA_PRI`) plugged in; `Miranda_Tate_unveiled.dotm` opened |
+| 16:43:21 | VBScript executed via `cmd.exe` → `Wscript.exe` (ParentProcessId: 3968) → launches `121214.tmp` |
+| 16:48:12 | First malicious DNS request to `solidaritedeproximite.org`; `mhtr.jpg` downloaded (contains cryptor via steganography) |
+| 17:15:11 | Encryption phase complete; `DECRYPT MY FILES #.txt` created |
+| 17:15:13 | DNS request to `cerberhhyed5frqa.xmfir0.win` (1.688s after encryption) |
