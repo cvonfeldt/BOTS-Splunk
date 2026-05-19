@@ -43,7 +43,7 @@ WINWORD.EXE  (Miranda_Tate_unveiled.dotm opened from USB)
             │       └── 406 .txt files encrypted in bob.smith profile
             │           EventCode 2 (timestomp) on all affected files
             └── DNS beacon - cerberhhyed5frqa.xmfir0.win
-                    └── Post-encryption C2 callback (1.688s after encryption)
+                    └── Post-enrcyption C2 callback (1.688s after encryption)
 ````
 
 This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
@@ -66,7 +66,7 @@ The large `ParentCommandLine` field identified in Question 5 (4490 characters) a
 | Hidden payload inside `.jpg` | Steganography | T1027.003 |
 | SMB/NetBIOS communication with file server | SMB/Windows Admin Shares | T1021.002 |
 | Encryption of local and remote files | Data Encrypted for Impact | T1486 |
-| Post-encryption callback to Cerber infrastructure | Application Layer Protocol | T1071 |
+| Post-encryption callback to Cerber infrastructre | Application Layer Protocol | T1071 |
 
 ---
 
@@ -76,7 +76,7 @@ Several strong behavioral indicators were identified during the investigation th
 
 - Rule: Alert when any Office application (winword.exe, excel.exe) spawns cmd.exe or wscript.exe
 - Rule: Alert on .tmp files being executed as processes (execution of temp-directory payloads)
-- Rule: Flag processes with ParentCommandLine length exceeding 1000 characters — indicative of encoded/obfuscated script execution
+- Rule: Flag processes with ParentCommandLine length exceeding 1000 characters - indicative of encoded/obfuscated script execution
 - Rule: Alert on SMB write volume spikes from a single workstation to a file server within a short time window
 - Rule: Alert when a burst of file modification events is immediately followed by creation of a file matching *DECRYPT* or *README* in the same directory
 - Rule: Alert on DNS requests to external domains within 5 seconds of a mass file modification event
@@ -88,7 +88,7 @@ Several strong behavioral indicators were identified during the investigation th
 | Time (24AUG2016) | Event |
 |------------------|-------|
 | ~16:43 | USB (`MIRANDA_PRI`) plugged in; `Miranda_Tate_unveiled.dotm` opened |
-| 16:43:21 | VBScript executed via `cmd.exe` → `Wscript.exe` (ParentProcessId: 3968) → launches `121214.tmp` |
+| 16:43:21 | VBScript executed via `cmd.exe` - `Wscript.exe` (ParentProcessId: 3968) - launches `121214.tmp` |
 | 16:48:12 | First malicious DNS request to `solidaritedeproximite.org`; `mhtr.jpg` downloaded (contains cryptor via steganography) |
 | 17:15:11 | Encryption phase complete; `DECRYPT MY FILES #.txt` created |
 | 17:15:13 | DNS request to `cerberhhyed5frqa.xmfir0.win` (1.688s after encryption) |
