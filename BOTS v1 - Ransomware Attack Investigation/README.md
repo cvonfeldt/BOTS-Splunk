@@ -100,7 +100,7 @@ It looks like our field that we want to find the length of is `ParentCommandLine
 
 **Answer: `MIRANDA_PRI`**
 
-For this one I first tried to find the name of the drive in an event from WinRegistry source, and then got more specific results when I included "USB" in my search as well. I sorted by time to see when the first USB related event from WinRegistry occurred. We can see here that the registrytype is "CreateKey". I figured the key that was created and associated could come in handy in tracking it. I found what I think is the key — it doesn't say explicitly but within both the field path and registry name path, we can see a process ID and some numbers/chars: `PID_6387#7D961196#{a5dcbf10-6530-11d2-901f-00c04fb951ed}`.
+For this one I first tried to find the name of the drive in an event from WinRegistry source, and then got more specific results when I included "USB" in my search as well. I sorted by time to see when the first USB related event from WinRegistry occurred. We can see here that the registrytype is "CreateKey". I figured the key that was created and associated could come in handy in tracking it. I found what I think is the key - it doesn't say explicitly but within both the field path and registry name path, we can see a process ID and some numbers/chars: `PID_6387#7D961196#{a5dcbf10-6530-11d2-901f-00c04fb951ed}`.
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/winreg.png)
 
 I noticed a field called `registry_key_name` and looked at the results — this caught my eye as it seems like it lists more about the USB itself in human readable form. I figured that sounds like it would list the USB name or get us closer, so added that to the query.
