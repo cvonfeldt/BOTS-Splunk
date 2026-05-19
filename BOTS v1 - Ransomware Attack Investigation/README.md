@@ -1,4 +1,4 @@
-# 02 - Boss of the SOC (BOTS) v1 - Cerber Ransomware Investigation
+# 02 - Boss of the SOC (BOTS) v1 - Cerber Ransomware Investigation with Process Lineage and MITRE ATT&CK analysis
 
 ## Overview
 
@@ -249,11 +249,4 @@ Several strong behavioral indicators were identified during the investigation:
 * DNS requests to suspicious external infrastructure immediately after encryption
 
 These behaviors are significantly more resilient detection opportunities than static indicators such as hashes, filenames, or IP addresses because attackers can easily modify those artifacts between campaigns.
-
-```
-```
-
-| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
-| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
-| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
 
