@@ -192,7 +192,7 @@ Had to go outside of Splunk to get this one since this malware was on the attack
 
 ---
 
-### Q11: What special hex code is associated with the customized malware discussed in question 111?
+### Q11: What special hex code is associated with the customized malware discussed in question 10?
 
 **Answer: (53 74 65 76 65 20 42 72 61 6e 74 27 73 20 42 65 61 72 64 20 69 73 20 61 20 70 6f 77 65 72 66 75 6c 20 74 68 69 6e 67 2e 20 46 69 6e 64 20 74 68 69 73 20 6d 65 73 73 61 67 65 20 61 6e 64 20 61 73 6b 20 68 69 6d 20 74 6f 20 62 75 79 20 79 6f 75 20 61 20 62 65 65 72 21 21 21 )**
 
@@ -264,7 +264,7 @@ Then took the time that the web server found the batman password via brute force
 
 ### Q17: How many unique passwords were attempted in the brute force attempt?
 
-**Answer: (your count here)**
+**Answer: (412)**
 
 Took all of the brute force attempts excluding the successful one from 40.80.148.42 because we know that 23.22.63.114 already found "batman" so it was a duplicate. Queried all brute force attempts then took a distinct count of the passwords.
 
