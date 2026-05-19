@@ -43,7 +43,7 @@ WINWORD.EXE  (Miranda_Tate_unveiled.dotm opened from USB)
             │       └── 406 .txt files encrypted in bob.smith profile
             │           EventCode 2 (timestomp) on all affected files
             └── DNS beacon - cerberhhyed5frqa.xmfir0.win
-                    └── Post-enrcyption C2 callback (1.688s after encryption)
+                    └── Post-encryption C2 callback (1.688s after encryption)
 ````
 
 This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
