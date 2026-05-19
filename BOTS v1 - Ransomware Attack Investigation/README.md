@@ -76,7 +76,7 @@ The first few are just WPAD (web proxy auto discovery) and Microsoft domains, wh
 When doing a little more digging into the GET requests to the server, we see it appears to be a French-located server, or at least written in French, which is pretty unusual for a host machine at wayne enterprises to be sending requests to.
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/french.png)
 
-Changing the sourcetype to fortigate logs (fgt_utm), we can see that the server is indeed located in France is a big red flag, and we see something even more important confirming suspicions: that fortigate has flagged this as a domain from its honeypot-access list, meaning it's been associated with malicious activity and flagged in the past. This definitely appears to be the first malicious FQDN that we8105desk visited that day.
+Changing the sourcetype to fortigate logs (fgt_utm), we can see that the server is indeed located in France , which is a big red flag, and we see something even more important confirming suspicions: that fortigate has flagged this as a domain from its honeypot-access list, meaning it's been associated with malicious activity and flagged in the past. This definitely appears to be the first malicious FQDN that we8105desk visited that day.
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/ftg.png)
 
 ---
