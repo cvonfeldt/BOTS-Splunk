@@ -133,7 +133,7 @@ The events returned were only ports NetBIOS and SMB, and the only dest_IP was th
 Now that I know the IP of the file server, I can find out the name of the machine in sysmon logs which we can see (and saw earlier with the DNS) is `we9041srv`. 
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/smbHostName.png)
 
-Now I can filter to that host to see the files changed on that actual device. Here we can see that all of the files have been granted to write and/or add data to files, so we can assume these are the ones encrypted.
+Realizing I don't need the alerts to be sysmon anymore, I now can remove that. I can also filter to that host to see the files changed on that actual device. Here we can see that all of the files have been granted to write and/or add data to files, so we can assume these are the ones encrypted.
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/change.png)
 
 I can now just find the distinct counts of relative target names to find 257 unique files (since the same pdfs are involved in multiple events i.e. adds, edits, deletions).
