@@ -48,7 +48,7 @@ So for this one I first just queried results including cerber, and the sourcetyp
 **Answer: `cerberhhyed5frqa.xmfir0.win`**
 
 In the intro context given, we know that Bob's files are all inaccessible and the recording states that all of his "documents, databases, photos, and other important files" have been encrypted. We want to find the time that the files were encrypted, so assuming the attacker didn't gain admin privileges before encrypting anything, we can query under Bob's user account on his host machine for Sysmon files with the event codes 1, 11, or 21. 1 for process creation if attacker opened another app to aid in the attack, 11 if the attacker created new files to place the encrypted info in, or modified the files to overwrite the original info with the encrypted info in original file, and 21 for if he deleted any of Bob's files. After filtering further with ".txt" luckily we did find an encrypted file in an event with a code 1 as we can see: "DECRYPT MY FILES #.txt". at 5:15:11.000 PM.
-![Q1 - Network tag confirming IP association to we8105desk](screenshots/q3FoundFile.png)
+![Q1 - Network tag confirming IP association to we8105desk](screenshots/Q3FoundFile.png)
 
 Now filtering the time range to after 5:15:11.000 PM, we can search for dns request from Bob's host machine. Since we know this is will be a DNS request resolving a domain name to IP4, adding `tag::eventtype=dns` as well as `record_type=A` helps us to narrow down the results. 
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/q3dns.png)
