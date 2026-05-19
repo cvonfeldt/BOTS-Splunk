@@ -24,16 +24,13 @@ This documents an investigation into a website defacement attack against imreall
 
 ## Process Lineage
 
-The post-exploitation phase on the web server followed a highly anomalous parent-child process chain that immediately indicates a web application compromise. On a secure Windows environment hosting a Joomla CMS, the web server worker daemon should never invoke standard command interpreters to execute untrusted, arbitrary binaries out of public web directories.
-
 ```text
-w3wp.exe (IIS Worker Process / Joomla Context)
-└── cmd.exe (Invoked via ExtPlorer web shell upload)
-    └── 3791.exe (Uploaded Persistent Backdoor Payload)
-        ├── net.exe / whoami.exe (Local recon - enumerating users and network shares)
-        └── powershell.exe / curl.exe  (Outbound GET to fetch defacement asset)
-            └── HTTP GET - prankglassinebracket.jumpingcrab.com (23.22.63.114)
-                └── poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced
+w3wp.exe  (IIS Worker Process / Joomla Context)
+└── cmd.exe  (Invoked via ExtPlorer web shell upload)
+    └── 3791.exe  (Uploaded persistent backdoor payload)
+        ├── net.exe / whoami.exe  (Local recon - enumerating users and network shares)
+        └── TCP connection - 23.22.63.114:3791 (Symson EventCode 3, initiated directly by 3791.exe)
+                └── poisonivy-is-coming-for-you-batman.jpeg downloaded - site defaced
 
 ```
 
@@ -57,7 +54,7 @@ Several strong behavioral indicators were identified during the investigation th
 
 - Rule: Alert when w3wp.exe or any IIS worker process spawns cmd.exe or powershell.exe
 - Rule: Alert on >10 HTTP POSTs per minute from a single IP to any /administrator/ or login endpoint
-- Rule: Flag source IPs whose connection_type transitions from "closed" to "keep_alive" on a login endpoint — indicates a successful auth after prior failures
+- Rule: Flag source IPs whose connection_type transitions from "closed" to "keep_alive" on a login endpoint - indicates a successful auth after prior failures
 - Rule: Alert on any web server process initiating outbound HTTP connections to dynamic DNS domains (*.jumpingcrab.com, *.no-ip.org, etc.)
 - Rule: Alert on executable files (.exe) being uploaded via HTTP POST to a web application directory
 
