@@ -19,6 +19,48 @@ This documents an investigation into a website defacement attack against imreall
 
 **Data Sources Used:** Suricata, Fortigate (fgt_utm), stream:http, WinEventLog:Security, XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
 
+
+# Process Lineage & MITRE ATT&CK Analysis
+
+## Process Lineage
+
+The post-exploitation phase on the web server followed a highly anomalous parent-child process chain that immediately indicates a web application compromise. On a secure Windows environment hosting a Joomla CMS, the web server worker daemon should never invoke standard command interpreters to execute untrusted, arbitrary binaries out of public web directories.
+
+```text
+w3wp.exe (IIS Worker Process / Joomla Context)
+└── cmd.exe (Invoked via ExtPlorer web shell upload)
+    └── 3791.exe (Uploaded Persistent Backdoor Payload)
+        ├── net.exe / whoami.exe (Local reconnaissance commands)
+        └── powershell.exe / curl.exe (Outbound GET requests to fetch defacement asset)
+            └── Network connection to prankglassinebracket.jumpingcrab.com
+                └── poisonivy-is-coming-for-you-batman.jpeg downloaded
+
+## MITRE ATT&CK Mapping
+
+| Attack Activity | MITRE Technique | ID |
+|---|---|---|
+| Web application vulnerability scanning via Acunetix | Active Scanning: Vulnerability Scanning | T1595.002 |
+| Automated credential stuffing against Joomla admin portal | Brute Force: Credential Stuffing | T1110.004 |
+| Exploiting valid CMS administrative credentials | Valid Accounts: Cloud/Web Accounts | T1078.004 |
+| Uploading persistent backdoor via ExtPlorer File Manager | Web Shell / Upload Malicious Software | T1505.003 |
+| Execution of malicious payload via IIS worker process | Command and Scripting Interpreter | T1059 |
+| Reaching out to dynamic DNS infrastructure to fetch assets | Ingress Tool Transfer | T1105 |
+| Website defacement via external web asset injection | Defacement | T1491 |
+
+---
+
+## Detection Engineering Notes
+
+Several strong behavioral indicators were identified during the investigation:
+
+- IIS Worker Process (`w3wp.exe`) spawning a command shell (`cmd.exe` or `powershell.exe`)
+- Web server daemon launching binaries out of public web roots (i.e. `/media/`, `/uploads/`, `/tmp/`)
+- Inbound high volume `HTTP POST` volume spikes targeted at application login endpoints (`/administrator/`)
+- Repeated `HTTP 303` redirection status codes followed by a sudden structural change in user session behavior (`Keep-Alive` transition)
+- Host initiating unexpected outbound HTTP connections to unverified Dynamic DNS domains (like `jumpingcrab.com`)
+
+Focusing detection logic around these native system behaviors rather than static Indicators of Compromise (such as the specific MD5 hash of `3791.exe` or the attacker's temporary scanning IP) ensures the SOC maintains a durable defense that cannot be easily bypassed by simple recompilation or proxy shifting.
+
 ## Investigation
 
 ### Q1: What is the likely IPv4 address of someone from the Po1s0n1vy group scanning imreallynotbatman.com for web application vulnerabilities?
