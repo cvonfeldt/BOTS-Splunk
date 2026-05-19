@@ -69,7 +69,7 @@ Several strong behavioral indicators were identified during the investigation th
 | 21:46:33 | Brute force identifies correct password: "batman" |
 | 21:48:05 | 40.80.148.42 logs in with correct credentials (connection_type flips to keep_alive, 92.17s after password found) |
 | Post-login | 3791.exe uploaded to web server via Joomla ExtPlorer file manager |
-| 22:06:21 | DNS query resolves prankglassinebracket.jumpingcrab.com → 23.22.63.114 |
+| 22:06:21 | DNS query resolves prankglassinebracket.jumpingcrab.com - 23.22.63.114 |
 | 22:19:10 | Outbound GET request issued to 23.22.63.114; confirmed by both Fortigate and stream:http logs |
 | 22:19:11 | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
 
