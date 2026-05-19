@@ -61,6 +61,8 @@ Several strong behavioral indicators were identified during the investigation:
 
 Focusing detection logic around these native system behaviors rather than static Indicators of Compromise (such as the specific MD5 hash of `3791.exe` or the attacker's temporary scanning IP) ensures the SOC maintains a durable defense that cannot be easily bypassed by simple recompilation or proxy shifting.
 
+---
+
 ## Investigation
 
 ### Q1: What is the likely IPv4 address of someone from the Po1s0n1vy group scanning imreallynotbatman.com for web application vulnerabilities?
