@@ -2,7 +2,7 @@
 
 ## Overview
 
-This documents an investigation into a Cerber ransomware attack targeting Bob Smith's workstation (`we8105desk`) at Wayne Enterprises. The attack involved an initial infection via a malicious macro document, VBScript execution, lateral movement to a file server, and full file encryption. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, Sysmon, and WinRegistry logs. This investigation required much deeper analysis/triaging than the batman web server investigation, so write-ups for my thought processes and answers were more lengthy. 
+This documents an investigation into a Cerber ransomware attack targeting Bob Smith's workstation (`we8105desk`) at Wayne Enterprises. The attack involved an initial infection via a malicious macro document, VBScript execution, lateral movement to a file server, and full file encryption. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, Sysmon, WinRegistry, and WinSecurity logs. This investigation required much deeper analysis/triaging than the batman web server investigation, so write-ups for my thought processes and answers were more lengthy. 
 
 ## Context:
 
