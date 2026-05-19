@@ -33,7 +33,7 @@ w3wp.exe (IIS Worker Process / Joomla Context)
         ├── net.exe / whoami.exe (Local recon - enumerating users and network shares)
         └── powershell.exe / curl.exe  (Outbound GET to fetch defacement asset)
             └── HTTP GET - prankglassinebracket.jumpingcrab.com (23.22.63.114)
-            └── poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced
+                └── poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced
 
 ```
 
