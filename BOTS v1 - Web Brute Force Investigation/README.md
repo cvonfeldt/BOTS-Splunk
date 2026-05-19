@@ -30,10 +30,10 @@ The post-exploitation phase on the web server followed a highly anomalous parent
 w3wp.exe (IIS Worker Process / Joomla Context)
 └── cmd.exe (Invoked via ExtPlorer web shell upload)
     └── 3791.exe (Uploaded Persistent Backdoor Payload)
-        ├── net.exe / whoami.exe (Local reconnaissance commands)
-        └── powershell.exe / curl.exe (Outbound GET requests to fetch defacement asset)
-            └── Network connection to prankglassinebracket.jumpingcrab.com
-                └── poisonivy-is-coming-for-you-batman.jpeg downloaded
+        ├── net.exe / whoami.exe (Local recon - enumerating users and network shares)
+        └── powershell.exe / curl.exe  (Outbound GET to fetch defacement asset)
+            └── HTTP GET - prankglassinebracket.jumpingcrab.com (23.22.63.114)
+            └── poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced
 
 ```
 
