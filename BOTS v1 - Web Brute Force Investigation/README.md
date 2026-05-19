@@ -63,6 +63,38 @@ Several strong behavioral indicators were identified during the investigation th
 
 ---
 
+## Attack Timeline Summary
+
+| Time | Event |
+|------|-------|
+| Pre-attack | 40.80.148.42 scans imreallynotbatman.com using Acunetix; server returns HTTP 200 to 2 scans |
+| Pre-attack | 23.22.63.114 begins brute force against /administrator/ Joomla login endpoint |
+| 21:46:33 | Brute force identifies correct password: "batman" |
+| 21:48:05 | 40.80.148.42 logs in with correct credentials (connection_type flips to keep_alive, 92.17s after password found) |
+| Post-login | 3791.exe uploaded to web server via Joomla ExtPlorer file manager |
+| Post-login | Web server (192.168.250.70) makes outbound GET to prankglassinebracket.jumpingcrab.com (23.22.63.114) |
+| Post-login | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
+
+
+## Key Indicators of Compromise (IOCs)
+
+| Indicator | Value |
+|-----------|-------|
+| Attacker scanning IP | 40.80.148.42 |
+| Attacker brute force IP | 23.22.63.114 |
+| Attacker hosting IP | 23.22.63.114 |
+| Malicious domain | prankglassinebracket.jumpingcrab.com |
+| Defacement file | poisonivy-is-coming-for-you-batman.jpeg |
+| Uploaded executable | 3791.exe |
+| MD5 of executable | AAE3F5A29935E6ABCC2C2754D12A9AF0 |
+| Compromised CMS | Joomla |
+| Compromised admin password | batman |
+
+---
+
+## Detection Summary
+The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
+
 ## Investigation
 
 ### Q1: What is the likely IPv4 address of someone from the Po1s0n1vy group scanning imreallynotbatman.com for web application vulnerabilities?
@@ -269,34 +301,3 @@ Took all of the brute force attempts excluding the successful one from 40.80.148
 ![Q17 Unique Passwords](screenshots/q17-unique-passwords.png)
 
 ---
-
-
-## Attack Timeline Summary
-
-| Time | Event |
-|------|-------|
-| Pre-attack | 40.80.148.42 scans imreallynotbatman.com using Acunetix; server returns HTTP 200 to 2 scans |
-| Pre-attack | 23.22.63.114 begins brute force against /administrator/ Joomla login endpoint |
-| 21:46:33 | Brute force identifies correct password: "batman" |
-| 21:48:05 | 40.80.148.42 logs in with correct credentials (connection_type flips to keep_alive, 92.17s after password found) |
-| Post-login | 3791.exe uploaded to web server via Joomla ExtPlorer file manager |
-| Post-login | Web server (192.168.250.70) makes outbound GET to prankglassinebracket.jumpingcrab.com (23.22.63.114) |
-| Post-login | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
-
-
-## Key Indicators of Compromise (IOCs)
-
-| Indicator | Value |
-|-----------|-------|
-| Attacker scanning IP | 40.80.148.42 |
-| Attacker brute force IP | 23.22.63.114 |
-| Attacker hosting IP | 23.22.63.114 |
-| Malicious domain | prankglassinebracket.jumpingcrab.com |
-| Defacement file | poisonivy-is-coming-for-you-batman.jpeg |
-| Uploaded executable | 3791.exe |
-| MD5 of executable | AAE3F5A29935E6ABCC2C2754D12A9AF0 |
-| Compromised CMS | Joomla |
-| Compromised admin password | batman |
-
-## Detection Summary
-The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
