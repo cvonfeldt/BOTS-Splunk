@@ -3,6 +3,11 @@
 ## Overview
 This documents an investigation into a website defacement attack against imreallynotbatman.com, a Wayne Enterprises web property. The attack was carried out by the threat actor group Po1s0n1vy. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, stream:http, and Sysmon logs.
 
+## Context: 
+
+![Q1 Scan Detection](screenshots/webdeface.png)
+
+
 ## Lab Environment
 
 | Role | Details |
