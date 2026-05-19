@@ -30,13 +30,13 @@ This documents an investigation into a Cerber ransomware attack targeting Bob Sm
 The Cerber ransomware attack followed a suspicious parent-child process chain that is highly indicative of malware execution and script-based payload delivery.
 
 ```text
-explorer.exe
-└── winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
-    └── cmd.exe
-        └── wscript.exe
-            └── 121214.tmp
-                └── Network connections to malicious infrastructure
-                    └── File encryption activity
+
+winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
+└── cmd.exe
+    └── wscript.exe
+        └── 121214.tmp
+            └── Network connections to malicious infrastructure
+                └── File encryption activity
 ````
 
 This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
