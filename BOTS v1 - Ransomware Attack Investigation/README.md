@@ -192,3 +192,39 @@ For this one we know that Bob's machine would have to make a connection to downl
 | 16:48:12 | First malicious DNS request to `solidaritedeproximite.org`; `mhtr.jpg` downloaded (contains cryptor via steganography) |
 | 17:15:11 | Encryption phase complete; `DECRYPT MY FILES #.txt` created |
 | 17:15:13 | DNS request to `cerberhhyed5frqa.xmfir0.win` (1.688s after encryption) |
+
+
+---
+
+# Process Lineage & MITRE ATT&CK Analysis
+
+## Process Lineage
+
+The Cerber ransomware attack followed a suspicious parent-child process chain that is highly indicative of malware execution and script-based payload delivery.
+
+```text
+explorer.exe
+└── winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
+    └── cmd.exe
+        └── wscript.exe
+            └── 121214.tmp
+                └── Network connections to malicious infrastructure
+                    └── File encryption activity
+
+
+
+
+| Attack Activity                                    | MITRE Technique                     | ID        |
+| -------------------------------------------------- | ----------------------------------- | --------- |
+| USB-delivered infection vector                     | Replication Through Removable Media | T1091     |
+| User opens malicious `.dotm` document              | User Execution: Malicious File      | T1204.002 |
+| Macro/VBScript execution                           | Visual Basic                        | T1059.005 |
+| `cmd.exe` launching `wscript.exe`                  | Command and Scripting Interpreter   | T1059     |
+| Large obfuscated VBScript execution                | Obfuscated Files or Information     | T1027     |
+| Malware execution through trusted Windows binaries | Signed Binary Proxy Execution       | T1218     |
+| Download of `mhtr.jpg` payload                     | Ingress Tool Transfer               | T1105     |
+| Hidden payload inside `.jpg`                       | Steganography                       | T1027.003 |
+| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
+| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
+| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
+
