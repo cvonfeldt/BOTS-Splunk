@@ -31,12 +31,19 @@ The Cerber ransomware attack followed a suspicious parent-child process chain th
 
 ```text
 
-winword.exe (Miranda_Tate_unveiled.dotm opened from USB)
-└── cmd.exe
-    └── wscript.exe
+WINWORD.EXE  (Miranda_Tate_unveiled.dotm opened from USB)
+└── CMD.EXE
+    └── WSCRIPT.EXE
         └── 121214.tmp
-            └── Network connections to malicious infrastructure
-                └── File encryption activity
+            ├── HTTP GET - solidaritedeproximite.org
+            │       └── mhtr.jpg downloaded (steganographically encoded cryptor)
+            ├── SMB/NetBIOS - 192.168.250.20 (we9041srv)
+            │       └── 257 PDFs encrypted on remote file server
+            ├── Local file encryption
+            │       └── 406 .txt files encrypted in bob.smith profile
+            │           EventCode 2 (timestomp) on all affected files
+            └── DNS beacon - cerberhhyed5frqa.xmfir0.win
+                    └── Post-encryption C2 callback (1.688s after encryption)
 ````
 
 This process lineage is particularly suspicious because Microsoft Office applications do not normally spawn command interpreters (`cmd.exe`) or scripting engines (`wscript.exe`) during legitimate business activity.
