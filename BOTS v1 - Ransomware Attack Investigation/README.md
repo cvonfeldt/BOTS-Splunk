@@ -47,37 +47,66 @@ The large `ParentCommandLine` field identified in Question 5 (4490 characters) a
 
 ## MITRE ATT&CK Mapping
 
-| Attack Activity                                    | MITRE Technique                     | ID        |
-| -------------------------------------------------- | ----------------------------------- | --------- |
-| USB-delivered infection vector                     | Replication Through Removable Media | T1091     |
-| User opens malicious `.dotm` document              | User Execution: Malicious File      | T1204.002 |
-| Macro/VBScript execution                           | Visual Basic                        | T1059.005 |
-| `cmd.exe` launching `wscript.exe`                  | Command and Scripting Interpreter   | T1059     |
-| Large obfuscated VBScript execution                | Obfuscated Files or Information     | T1027     |
-| Malware execution through trusted Windows binaries | Signed Binary Proxy Execution       | T1218     |
-| Download of `mhtr.jpg` payload                     | Ingress Tool Transfer               | T1105     |
-| Hidden payload inside `.jpg`                       | Steganography                       | T1027.003 |
-| SMB/NetBIOS communication with file server         | SMB/Windows Admin Shares            | T1021.002 |
-| Encryption of local and remote files               | Data Encrypted for Impact           | T1486     |
-| Post-encryption callback to Cerber infrastructure  | Application Layer Protocol          | T1071     |
+| Attack Activity | MITRE Technique | ID        |
+| --------------- | --------------- | --------- |
+| USB-delivered infection vector | Replication Through Removable Media | T1091 |
+| User opens malicious `.dotm` document | User Execution: Malicious File | T1204.002 |
+| Macro/VBScript execution | Visual Basic | T1059.005 |
+| cmd.exe spawned by WINWORD.EXE to initiate attack chain | Command and Scripting Interpreter: Windows Command Shell | T1059.003 |
+| Large obfuscated VBScript execution | Obfuscated Files or Information | T1027 |
+| Malware execution through trusted Windows binaries | Signed Binary Proxy Execution | T1218 |
+| Download of `mhtr.jpg` payload | Ingress Tool Transfer | T1105 |
+| Hidden payload inside `.jpg` | Steganography | T1027.003 |
+| SMB/NetBIOS communication with file server | SMB/Windows Admin Shares | T1021.002 |
+| Encryption of local and remote files | Data Encrypted for Impact | T1486 |
+| Post-encryption callback to Cerber infrastructure | Application Layer Protocol | T1071 |
 
 ---
 
-## Detection Engineering Notes
+## Detection Opportunities
 
-Several strong behavioral indicators were identified during the investigation:
+Several strong behavioral indicators were identified during the investigation that rules could potentially detect:
 
-* Microsoft Office spawning command interpreters
-* `cmd.exe` spawning `wscript.exe`
-* Execution of `.tmp` payloads
-* Script execution with extremely long command-line arguments
-* SMB write activity spikes to a file server
-* File modification bursts followed by ransom-note creation
-* DNS requests to suspicious external infrastructure immediately after encryption
-
-These behaviors are significantly more resilient detection opportunities than static indicators such as hashes, filenames, or IP addresses because attackers can easily modify those artifacts between campaigns.
+- Rule: Alert when any Office application (winword.exe, excel.exe) spawns cmd.exe or wscript.exe
+- Rule: Alert on .tmp files being executed as processes (execution of temp-directory payloads)
+- Rule: Flag processes with ParentCommandLine length exceeding 1000 characters — indicative of encoded/obfuscated script execution
+- Rule: Alert on SMB write volume spikes from a single workstation to a file server within a short time window
+- Rule: Alert when a burst of file modification events is immediately followed by creation of a file matching *DECRYPT* or *README* in the same directory
+- Rule: Alert on DNS requests to external domains within 5 seconds of a mass file modification event
 
 ---
+
+## Attack Timeline Summary
+
+| Time (24AUG2016) | Event |
+|------------------|-------|
+| ~16:43 | USB (`MIRANDA_PRI`) plugged in; `Miranda_Tate_unveiled.dotm` opened |
+| 16:43:21 | VBScript executed via `cmd.exe` → `Wscript.exe` (ParentProcessId: 3968) → launches `121214.tmp` |
+| 16:48:12 | First malicious DNS request to `solidaritedeproximite.org`; `mhtr.jpg` downloaded (contains cryptor via steganography) |
+| 17:15:11 | Encryption phase complete; `DECRYPT MY FILES #.txt` created |
+| 17:15:13 | DNS request to `cerberhhyed5frqa.xmfir0.win` (1.688s after encryption) |
+
+
+## Key Indicators of Compromise (IOCs)
+
+| Indicator | Value |
+|-----------|-------|
+| Victim workstation | we8105desk (192.168.250.100) |
+| File server | we9041srv (192.168.250.20) |
+| USB device name | MIRANDA_PRI |
+| Initial infection file | Miranda_Tate_unveiled.dotm |
+| Downloaded payload | mhtr.jpg (steganographically encoded cryptor) |
+| Ransomware executable | 121214.tmp |
+| First malicious domain | solidaritedeproximite.org |
+| Post-encryption C2 domain | cerberhhyed5frqa.xmfir0.win |
+| .txt files encrypted (local) | 406 |
+| PDFs encrypted (file server) | 257 |
+
+---
+
+## Detection Summary
+
+The investigation revealed a multi-stage ransomware attack against Wayne Enterprises. Bob Smith's workstation was compromised via a malicious macro document delivered on a USB drive. The document executed a VBScript payload through a cmd.exe → wscript.exe process chain, which launched the Cerber ransomware binary (121214.tmp). The malware downloaded its cryptor code from a flagged French server (solidaritedeproximite.org) disguised inside a .jpg file using steganography, then laterally accessed the file server (we9041srv) over SMB before encrypting 406 local .txt files and 257 remote PDFs. The attack concluded with a DNS beacon to the Cerber C2 infrastructure 1.688 seconds after encryption completed.
 
 ## Investigation
 
@@ -235,18 +264,6 @@ For this one we know that Bob's machine would have to make a connection to downl
 ### Q12: Now that you know the name of the ransomware's encryptor file, what obfuscation technique does it likely use?
 
 **Answer: Steganography - code inside an image file.**
-
----
-
-## Attack Timeline Summary
-
-| Time (24AUG2016) | Event |
-|------------------|-------|
-| ~16:43 | USB (`MIRANDA_PRI`) plugged in; `Miranda_Tate_unveiled.dotm` opened |
-| 16:43:21 | VBScript executed via `cmd.exe` → `Wscript.exe` (ParentProcessId: 3968) → launches `121214.tmp` |
-| 16:48:12 | First malicious DNS request to `solidaritedeproximite.org`; `mhtr.jpg` downloaded (contains cryptor via steganography) |
-| 17:15:11 | Encryption phase complete; `DECRYPT MY FILES #.txt` created |
-| 17:15:13 | DNS request to `cerberhhyed5frqa.xmfir0.win` (1.688s after encryption) |
 
 
 ---
