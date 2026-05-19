@@ -155,7 +155,7 @@ For this one we know from #5 that the script that launches the 121214.tmp file i
 **Answer: `406`**
 
 Using the same logic as #8, we just want to filter to see all .txt files associated with bob.smith account during the attack.
-![Q1 - Network tag confirming IP association to we8105desk](txtfiles.png)
+![Q1 - Network tag confirming IP association to we8105desk](screenshots/txtfiles.png)
 
  We see that again these files were all granted access to be changed, unlike #8 though, there are two sourcetypes this time so we need to filter to just one, so we will go with Sysmon.
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/eventcode.png)
