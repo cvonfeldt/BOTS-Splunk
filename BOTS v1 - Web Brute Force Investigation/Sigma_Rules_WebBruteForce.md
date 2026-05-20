@@ -49,7 +49,7 @@ level: critical
 ```
  
 ---
-## Rule 4 - Executable File Upload to Web Application Directory
+## Rule 2 - Executable File Upload to Web Application Directory
  
 **What it detects:** A DNS request to an external domain occurring within a short window after a burst of file modification events, which is typical behavior of ransomware completing its encryption phase and beaconing to C2 infrastructure. In the Cerber investigation, a DNS request to `cerberhhyed5frqa.xmfir0.win` was observed exactly 1.688 seconds after the encryption phase completed.
  
