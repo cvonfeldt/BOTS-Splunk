@@ -57,8 +57,6 @@ level: high
 
 ## Rule 2 - Post-Encryption DNS Beacon
  
-**Investigation:** Cerber Ransomware (BOTS v1 - 02)
- 
 **What it detects:** A DNS request to an external domain occurring within a short window after a burst of file modification events, which is typical behavior of ransomware completing its encryption phase and beaconing to C2 infrastructure. In the Cerber investigation, a DNS request to `cerberhhyed5frqa.xmfir0.win` was observed exactly 1.688 seconds after the encryption phase completed.
  
 **Why it's evasion-resistant:** This rule correlates two separate data sources - file system telemetry and DNS logs. Neither event alone is necessarily malicious, but the combination and timing is an extremely specific behavioral anomaly that is difficult for an attacker to avoid since the C2 callback is built into the malware's own post-encryption routine.
