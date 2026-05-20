@@ -1,4 +1,4 @@
-# 02 - Boss of the SOC (BOTS) v1 - Cerber Ransomware Investigation with Process Lineage and MITRE ATT&CK analysis
+# 02 - Boss of the SOC (BOTS) v1 - Cerber Ransomware Investigation with Sigma Rules, Process Lineage and MITRE ATT&CK analysis
 
 ## Overview
 
