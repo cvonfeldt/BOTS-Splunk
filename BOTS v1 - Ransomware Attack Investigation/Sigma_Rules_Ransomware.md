@@ -72,7 +72,7 @@ description: >
     ransomware completing encryption and beaconing to C2 infrastructure.
     Observed in Cerber ransomware post-encryption callback to 
     cerberhhyed5frqa.xmfir0.win 1.688 seconds after encryption completed.
-author: your name
+author: Chandler VonFeldt
 date: 2026/04/28
 references:
     - https://attack.mitre.org/techniques/T1486/
