@@ -58,6 +58,8 @@ Several strong behavioral indicators were identified during the investigation th
 - Rule: Alert on any web server process initiating outbound HTTP connections to dynamic DNS domains (*.jumpingcrab.com, *.no-ip.org, etc.): potentially malicious
 - Rule: Alert on executable files (.exe) being uploaded via HTTP POST to a web application directory: Web apllication direcs should never contain executables
 
+**See "BOTS v1 - Ransomware Attack Investigation/Sigma_Rules_WebBruteForce.md" for official sigma rules written for investigation**
+
 ---
 
 ## Attack Timeline Summary
