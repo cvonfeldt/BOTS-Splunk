@@ -36,7 +36,7 @@ WINWORD.EXE  (Miranda_Tate_unveiled.dotm opened from USB)
     └── WSCRIPT.EXE
         └── 121214.tmp
             ├── HTTP GET - solidaritedeproximite.org
-            │       └── mhtr.jpg downloaded (steganographically encoded cryptor)
+            │       └── mhtr.jpg downloaded (steganography-encoded cryptor)
             ├── SMB/NetBIOS - 192.168.250.20 (we9041srv)
             │       └── 257 PDFs encrypted on remote file server
             ├── Local file encryption
@@ -74,12 +74,12 @@ The large `ParentCommandLine` field identified in Question 5 (4490 characters) a
 
 Several strong behavioral indicators were identified during the investigation that rules could potentially detect:
 
-- Rule: Alert when any Office application (winword.exe, excel.exe) spawns cmd.exe or wscript.exe
-- Rule: Alert on .tmp files being executed as processes (execution of temp-directory payloads)
-- Rule: Flag processes with ParentCommandLine length exceeding 1000 characters - indicative of encoded/obfuscated script execution
-- Rule: Alert on SMB write volume spikes from a single workstation to a file server within a short time window
-- Rule: Alert when a burst of file modification events is immediately followed by creation of a file matching *DECRYPT* or *README* in the same directory
-- Rule: Alert on DNS requests to external domains within 5 seconds of a mass file modification event
+- Rule: Alert when any Office application (winword.exe, excel.exe) spawns cmd.exe or wscript.exe: should almost never happen 
+- Rule: Alert on .tmp files being executed as processes (execution of temp-directory payloads): .tmp files should not be in execution paths
+- Rule: Flag processes with ParentCommandLine length exceeding 1000 characters: Potential encoded/obfuscated script execution
+- Rule: Alert on SMB write volume spikes from a single workstation to a file server within a short time window: highly unusual to be modifying that many files on file server in short time span
+- Rule: Alert when a burst of file modification events is immediately followed by creation of a file matching *DECRYPT* or *README* in the same directory: sign files have been encrypted
+- Rule: Alert on DNS requests to external domains within 5 seconds of a mass file modification event: Should never happen together - redirect to malicious web server shows potential post-encryption details being sent in ransomware attack
 
 ---
 
