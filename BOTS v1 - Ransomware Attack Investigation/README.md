@@ -81,7 +81,7 @@ Several strong behavioral indicators were identified during the investigation th
 - Rule: Alert when a burst of file modification events is immediately followed by creation of a file matching *DECRYPT* or *README* in the same directory: sign files have been encrypted
 - Rule: Alert on DNS requests to external domains within 5 seconds of a mass file modification event: Should never happen together - redirect to malicious web server shows potential post-encryption details being sent in ransomware attack
 
-**See BOTS v1 - Ransomware Attack Investigation/Sigma_Rules_Ransomware.md for official sigma rules written for investigation**
+**See BOTS v1 - "Ransomware Attack Investigation/Sigma_Rules_Ransomware.md" for official sigma rules written for investigation**
 
 ---
 
