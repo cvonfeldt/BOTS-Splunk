@@ -52,11 +52,11 @@ w3wp.exe  (IIS Worker Process / Joomla Context)
 
 Several strong behavioral indicators were identified during the investigation that rules could potentially detect:
 
-- Rule: Alert when w3wp.exe or any IIS worker process spawns cmd.exe or powershell.exe
-- Rule: Alert on >10 HTTP POSTs per minute from a single IP to any /administrator/ or login endpoint
-- Rule: Flag source IPs whose connection_type transitions from "closed" to "keep_alive" on a login endpoint - indicates a successful auth after prior failures
-- Rule: Alert on any web server process initiating outbound HTTP connections to dynamic DNS domains (*.jumpingcrab.com, *.no-ip.org, etc.)
-- Rule: Alert on executable files (.exe) being uploaded via HTTP POST to a web application directory
+- Rule: Alert when w3wp.exe or any IIS worker process spawns cmd.exe or powershell.exe: w3wp.exe is web server process - should not be spawning a command prompt
+- Rule: Alert on greater tham 10 HTTP POSTs per minute from a single IP to any /administrator/ or login endpoint: potential brute force
+- Rule: Flag source IPs whose connection_type transitions from "closed" to "keep_alive" on a login endpoint:  indicates a successful auth after prior failures
+- Rule: Alert on any web server process initiating outbound HTTP connections to dynamic DNS domains (*.jumpingcrab.com, *.no-ip.org, etc.): potentially malicious
+- Rule: Alert on executable files (.exe) being uploaded via HTTP POST to a web application directory: Web apllication direcs should never contain executables
 
 ---
 
