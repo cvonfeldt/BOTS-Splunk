@@ -75,7 +75,7 @@ description: >
     Observed in Cerber ransomware post-encryption callback to 
     cerberhhyed5frqa.xmfir0.win 1.688 seconds after encryption completed.
 author: your name
-date: 2024/01/01
+date: 2026/04/28
 references:
     - https://attack.mitre.org/techniques/T1486/
     - https://attack.mitre.org/techniques/T1568/
