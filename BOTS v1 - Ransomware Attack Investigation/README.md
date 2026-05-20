@@ -113,7 +113,7 @@ Several strong behavioral indicators were identified during the investigation th
 
 ## Detection Summary
 
-The investigation revealed a multi-stage ransomware attack against Wayne Enterprises. Bob Smith's workstation was compromised via a malicious macro document delivered on a USB drive. The document executed a VBScript payload through a cmd.exe → wscript.exe process chain, which launched the Cerber ransomware binary (121214.tmp). The malware downloaded its cryptor code from a flagged French server (solidaritedeproximite.org) disguised inside a .jpg file using steganography, then laterally accessed the file server (we9041srv) over SMB before encrypting 406 local .txt files and 257 remote PDFs. The attack concluded with a DNS beacon to the Cerber C2 infrastructure 1.688 seconds after encryption completed.
+The investigation revealed a multi-stage ransomware attack against Wayne Enterprises. Bob Smith's workstation was compromised via a malicious macro document delivered on a USB drive. The document executed a VBScript payload through a cmd.exe to wscript.exe process chain, which launched the Cerber ransomware binary (121214.tmp). The malware downloaded its cryptor code from a flagged French server (solidaritedeproximite.org) disguised inside a .jpg file using steganography, then laterally accessed the file server (we9041srv) over SMB before encrypting 406 local .txt files and 257 remote PDFs. The attack concluded with a DNS beacon to the Cerber C2 infrastructure 1.688 seconds after encryption completed.
 
 ## Investigation
 
