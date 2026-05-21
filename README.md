@@ -1,4 +1,4 @@
-# splunk-bots-investigations
+# Splunk BOTS investigations
 My investigations, walkthroughs, and overall thought processes from Splunk Boss of the SOC (BOTS) datasets focused on ransomware analysis, malware execution, DNS investigations, brute force attacks, Sysmon logging, Suricata alerts, and threat hunting using Splunk.
 
 ## Overview
