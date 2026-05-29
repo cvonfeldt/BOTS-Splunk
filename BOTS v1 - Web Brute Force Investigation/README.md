@@ -69,7 +69,6 @@ Several strong behavioral indicators were identified during the investigation th
 **See "BOTS v1 - Ransomware Attack Investigation/Sigma_Rules_WebBruteForce.md" for official sigma rules written for investigation**
 
 ---
-<br>
 
 ## Attack Timeline Summary
 
@@ -106,7 +105,6 @@ Several strong behavioral indicators were identified during the investigation th
 ## Detection Summary:
 The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
 ---
-<br>
 
 ## Investigation:
 ---
