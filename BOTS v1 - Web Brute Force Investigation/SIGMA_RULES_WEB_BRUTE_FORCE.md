@@ -5,9 +5,12 @@ These rules were made based on the BOTS v1 web brute force attack investigation.
 All rules follow the [Sigma specification](https://github.com/SigmaHQ/sigma) and can be converted to Splunk SPL, Microsoft Sentinel KQL, or any other SIEM query language using [sigmac](https://github.com/SigmaHQ/sigma/tree/master/tools) or [pySigma](https://github.com/SigmaHQ/pySigma).
  
 ---
- 
+<br>
+
 ## Rule 1 - IIS Worker Process Spawning Command Interpreter
- 
+
+**Investigation:** Web Brute Force Attack (BOTS v1)
+
 **What it detects:** The IIS worker process (`w3wp.exe`) spawning a command interpreter, which is the behavioral signature of a web shell being executed on a compromised IIS server. In the web defacement investigation, `w3wp.exe` spawned `cmd.exe` which then executed the uploaded backdoor `3791.exe` from the Joomla web root.
  
 **Why it's evasion-resistant:** There is no legitimate reason for `w3wp.exe` to ever spawn `cmd.exe` or `powershell.exe` during normal web server operation. This relationship is anomalous regardless of what payload the attacker uploads or what they name it.
@@ -49,7 +52,11 @@ level: critical
 ```
  
 ---
+<br>
+
 ## Rule 2 - Executable File Upload to Web Application Directory
+
+**Investigation:** Web Brute Force Attack (BOTS v1)
  
 **What it detects:** A DNS request to an external domain occurring within a short window after a burst of file modification events, which is typical behavior of ransomware completing its encryption phase and beaconing to C2 infrastructure. In the Cerber investigation, a DNS request to `cerberhhyed5frqa.xmfir0.win` was observed exactly 1.688 seconds after the encryption phase completed.
  
