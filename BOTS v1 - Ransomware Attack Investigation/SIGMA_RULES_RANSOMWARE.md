@@ -5,9 +5,12 @@ These rules were made based on the BOTS v1 cerber ransomware attack investigatio
 All rules follow the [Sigma specification](https://github.com/SigmaHQ/sigma) and can be converted to Splunk SPL, Microsoft Sentinel KQL, or any other SIEM query language using [sigmac](https://github.com/SigmaHQ/sigma/tree/master/tools) or [pySigma](https://github.com/SigmaHQ/pySigma).
  
 ---
- 
+<br>
+
 ## Rule 1 - Office Application Spawning Command Interpreter
- 
+
+**Investigation:** Ransomware Attack (BOTS v1)
+
 **What it detects:** A Microsoft Office application spawning a command interpreter or scripting engine, which is the behavioral signature of a malicious macro executing a payload. In the Cerber investigation, `WINWORD.EXE` spawned `CMD.EXE` which then spawned `WSCRIPT.EXE` to execute the ransomware VBScript loader.
  
 **Why it's evasion-resistant:** An attacker cannot avoid this parent-child relationship when abusing Office macros. Regardless of what the payload is named or where it is stored, the macro has to invoke a command interpreter to execute it, and that relationship will always appear in Sysmon Event ID 1.
@@ -53,9 +56,11 @@ level: high
 ```
  
 ---
-
+<br>
 
 ## Rule 2 - Post-Encryption DNS Beacon
+
+**Investigation:** Ransomware Attack (BOTS v1)
  
 **What it detects:** A DNS request to an external domain occurring within a short window after a burst of file modification events, which is typical behavior of ransomware completing its encryption phase and beaconing to C2 infrastructure. In the Cerber investigation, a DNS request to `cerberhhyed5frqa.xmfir0.win` was observed exactly 1.688 seconds after the encryption phase completed.
  
