@@ -3,9 +3,15 @@
 ## Overview
 This documents an investigation into a website defacement attack against imreallynotbatman.com, a Wayne Enterprises web property. The attack was carried out by the threat actor group Po1s0n1vy. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, stream:http, and Sysmon logs.
 
+---
+<br>
+
 ## Context: 
 
 ![Q1 Scan Detection](screenshots/webdeface.png)
+
+---
+<br>
 
 
 ## Lab Environment
@@ -18,6 +24,9 @@ This documents an investigation into a website defacement attack against imreall
 | Attacker (hosting infrastructure) | 23.22.63.114 |
 
 **Data Sources Used:** Suricata, Fortigate (fgt_utm), stream:http, WinEventLog:Security, XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+
+---
+<br>
 
 
 # Process Lineage & MITRE ATT&CK Analysis
@@ -47,6 +56,7 @@ w3wp.exe  (IIS Worker Process / Joomla Context)
 | Website defacement via external web asset injection | Defacement | T1491 |
 
 ---
+<br>
 
 ## Detection Opportunities
 
@@ -61,6 +71,7 @@ Several strong behavioral indicators were identified during the investigation th
 **See "BOTS v1 - Ransomware Attack Investigation/Sigma_Rules_WebBruteForce.md" for official sigma rules written for investigation**
 
 ---
+<br>
 
 ## Attack Timeline Summary
 
@@ -75,6 +86,8 @@ Several strong behavioral indicators were identified during the investigation th
 | 22:19:10 | Outbound GET request issued to 23.22.63.114; confirmed by both Fortigate and stream:http logs |
 | 22:19:11 | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
 
+---
+<br>
 
 ## Key Indicators of Compromise (IOCs)
 
@@ -91,11 +104,16 @@ Several strong behavioral indicators were identified during the investigation th
 | Compromised admin password | batman |
 
 ---
+<br>
 
 ## Detection Summary
 The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
+---
+<br>
 
 ## Investigation
+---
+<br>
 
 ### Q1: What is the likely IPv4 address of someone from the Po1s0n1vy group scanning imreallynotbatman.com for web application vulnerabilities?
 
@@ -114,6 +132,7 @@ The rest of the scans had 400/404 codes meaning the server rejected the request,
 
 
 ---
+<br>
 
 ### Q2: What company created the web vulnerability scanner used by Po1s0n1vy? Type the company name.
 
@@ -122,6 +141,7 @@ The rest of the scans had 400/404 codes meaning the server rejected the request,
 We can see in Q1 that the vuln scanner was made by Acunetix: "ET SCAN Acunetix Accept HTTP Header detected scan in progress"
 
 ---
+<br>
 
 ### Q3: What content management system is imreallynotbatman.com likely using?
 
@@ -132,6 +152,7 @@ Knew that any POST data to the site would include the CMS, so I simply queried f
 ![Q3 CMS Joomla](screenshots/q3-cms-joomla.png)
 
 ---
+<br>
 
 ### Q4: What is the name of the file that defaced the imreallynotbatman.com website? Please submit only the name of the file with extension? (For example, "notepad.exe" or "favicon.ico")
 
@@ -146,6 +167,7 @@ When removing the sourcetype filter to see Fortigate logs as well, we see the Ba
 ![Q4 Fortigate Log](screenshots/q4-fortigate-log.png)
 
 ---
+<br>
 
 ### Q5: This attack used dynamic DNS to resolve to the malicious IP. What fully qualified domain name (FQDN) is associated with this attack?
 
@@ -156,6 +178,7 @@ We can see in Q4 the domain but just to confirm, I added DNS to the query.
 ![Q5 FQDN](screenshots/q5-fqdn.png)
 
 ---
+<br>
 
 ### Q6: What IPv4 address has Po1s0n1vy tied to domains that are pre-staged to attack Wayne Enterprises?
 
@@ -164,6 +187,7 @@ We can see in Q4 the domain but just to confirm, I added DNS to the query.
 This is asking which server had the defacement attack ready to send to the Batman web server, which we already know from #4 is 23.22.63.114 - the IP that prankglassinebracket.jumpingcrab.com resolves to.
 
 ---
+<br>
 
 ### Q7: What IPv4 address is likely attempting a brute force password attack against imreallynotbatman.com?
 
@@ -184,6 +208,7 @@ I filtered the query (adding correct password "batman" to passwd form data) to t
 
 
 ---
+<br>
 
 ### Q8: What is the name of the executable uploaded by Po1s0n1vy?
 
@@ -201,6 +226,7 @@ Below we can confirm with the upload of the .exe with the Joomla ExtPlorer file 
 ![Q8 Executable Upload](screenshots/q8-executable-upload.png)
 
 ---
+<br>
 
 ### Q9: What is the MD5 hash of the executable uploaded?
 
@@ -211,6 +237,7 @@ To find this, I knew I would need to search for the MD5 where 3791.exe was the p
 ![Q9 MD5 Hash](screenshots/q9-md5-hash.png)
 
 ---
+<br>
 
 ### Q10: GCPD reported that common TTPs (Tactics, Techniques, Procedures) for the Po1s0n1vy APT group, if initial compromise fails, is to send a spear phishing email with custom malware attached to their intended target. This malware is usually connected to Po1s0n1vys initial attack infrastructure. Using research techniques, provide the SHA256 hash of this malware.
 
@@ -221,6 +248,7 @@ Had to go outside of Splunk to get this one since this malware was on the attack
 ![Q10 ThreatMiner](screenshots/q10-threatminer.png)
 
 ---
+<br>
 
 ### Q11: What special hex code is associated with the customized malware discussed in question 10?
 
@@ -231,6 +259,7 @@ Special hex code associated with customized malware: Entering the SHA256 we got 
 ![Q11 VirusTotal](screenshots/q11-virustotal.png)
 
 ---
+<br>
 
 ### Q12: What was the first brute force password used?
 
@@ -241,6 +270,7 @@ Oddly enough it seems like splunk changed their UI to dark mode in the middle of
 ![Q12 First Password](screenshots/q12-first-password.png)
 
 ---
+<br>
 
 ### Q13: One of the passwords in the brute force attack is James Brodsky's favorite Coldplay song. We are looking for a six character word on this one. Which is it?
 
@@ -251,6 +281,7 @@ I'm actually somewhat of a coldplay fan myself, and I can think of a few of thei
 ![Q13 Yellow Password](screenshots/q13-yellow-password.png)
 
 ---
+<br>
 
 ### Q14: What was the correct password for admin access to the content management system running "imreallynotbatman.com"?
 
@@ -262,6 +293,7 @@ We know from Q7 that this is "batman" - 40.80.148.42 made only one login attempt
 ![Q14 Correct Password](screenshots/q14-correct-password.png)
 
 ---
+<br>
 
 ### Q15: What was the average password length used in the password brute forcing attempt?
 
@@ -277,6 +309,7 @@ Once I specified form_data I got the correct average of approximately 6.175 char
 ![Q15 Average Length](screenshots/q15-average-length.png)
 
 ---
+<br>
 
 ### Q16: How many seconds elapsed between the time the brute force password scan identified the correct password and the compromised login?
 
@@ -291,6 +324,7 @@ Then took the time that the web server found the batman password via brute force
 ![Q16 Brute Force Time](screenshots/q16-brute-force-time.png)
 
 ---
+<br>
 
 ### Q17: How many unique passwords were attempted in the brute force attempt?
 
