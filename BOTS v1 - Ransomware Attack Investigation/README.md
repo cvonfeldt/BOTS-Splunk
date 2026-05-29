@@ -21,7 +21,8 @@ This documents an investigation into a Cerber ransomware attack targeting Bob Sm
 | Malware Family | Cerber Ransomware |
 
 **Data Sources Used:** Suricata, Fortigate (fgt_utm), XmlWinEventLog:Microsoft-Windows-Sysmon/Operational, WinRegistry, stream:dns
-
+---
+<br>
 
 # Process Lineage & MITRE ATT&CK Analysis
 
@@ -69,6 +70,7 @@ The large `ParentCommandLine` field identified in Question 5 (4490 characters) a
 | Post-encryption callback to Cerber infrastructre | Application Layer Protocol | T1071 |
 
 ---
+<br>
 
 ## Detection Opportunities
 
@@ -112,12 +114,13 @@ Several strong behavioral indicators were identified during the investigation th
 | PDFs encrypted (file server) | 257 |
 
 ---
+<br>
 
-## Detection Summary
+## Detection Summary:
 
 The investigation revealed a multi-stage ransomware attack against Wayne Enterprises. Bob Smith's workstation was compromised via a malicious macro document delivered on a USB drive. The document executed a VBScript payload through a cmd.exe to wscript.exe process chain, which launched the Cerber ransomware binary (121214.tmp). The malware downloaded its cryptor code from a flagged French server (solidaritedeproximite.org) disguised inside a .jpg file using steganography, then laterally accessed the file server (we9041srv) over SMB before encrypting 406 local .txt files and 257 remote PDFs. The attack concluded with a DNS beacon to the Cerber C2 infrastructure 1.688 seconds after encryption completed.
 
-## Investigation
+## Investigation:
 
 ### Q1: What was the most likely IPv4 address of we8105desk on 24AUG2016?
 
@@ -131,6 +134,7 @@ To confirm, analyzing one of the specific logs shows the IP of 192.168.250.100 f
 
 
 ---
+<br>
 
 ### Q2: Amongst the Suricata signatures that detected the Cerber malware, which one alerted the fewest number of times? Submit ONLY the signature ID value as the answer.
 
@@ -140,6 +144,7 @@ So for this one I first just queried results including cerber, and the sourcetyp
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/Q2alert.png)
 
 ---
+<br>
 
 ### Q3: What fully qualified domain name (FQDN) does the Cerber ransomware attempt to direct the user to at the end of its encryption phase?
 
@@ -155,6 +160,7 @@ Sorting the events to start immediately after the files were encrypted, we see a
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/recorda.png)
 
 ---
+<br>
 
 ### Q4: What was the first suspicious domain visited by we8105desk on 24AUG2016?
 
@@ -173,6 +179,7 @@ Changing the sourcetype to fortigate logs (fgt_utm), we can see that the server 
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/ftg.png)
 
 ---
+<br>
 
 ### Q5: During the initial Cerber infection a VB script is run. The entire script from this execution, pre-pended by the name of the launching .exe, can be found in a field in Splunk. What is the length of the value of this field?
 
@@ -188,6 +195,7 @@ It looks like our field that we want to find the length of is `ParentCommandLine
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/length.png)
 
 ---
+<br>
 
 ### Q6: What is the name of the USB key inserted by Bob Smith?
 
@@ -206,6 +214,7 @@ Removing the registry key name filter and adding MIRANDA_PRI to our query (to se
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/wufd.png)
 
 ---
+<br>
 
 ### Q7: Bob Smith's workstation (we8105desk) was connected to a file server during the ransomware outbreak. What is the IPv4 address of the file server?
 
@@ -218,6 +227,7 @@ The events returned were only ports NetBIOS and SMB, and the only dest_IP was th
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/final.png)
 
 ---
+<br>
 
 ### Q8: How many distinct PDFs did the ransomware encrypt on the remote file server?
 
@@ -233,6 +243,7 @@ I can now just find the distinct counts of relative target names to find 257 uni
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/dcpdf.png)
 
 ---
+<br>
 
 ### Q9: The VBscript found in question 5 launches 121214.tmp. What is the ParentProcessId of this initial launch?
 
@@ -242,6 +253,7 @@ For this one we know from #5 that the script that launches the 121214.tmp file i
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/ParentProcess.png)
 
 ---
+<br>
 
 ### Q10: The Cerber ransomware encrypts files located in Bob Smith's Windows profile. How many .txt files does it encrypt?
 
@@ -260,6 +272,7 @@ And to make sure there are no duplicates, we use `dc` and see there are indeed *
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/disttxt.png)
 
 ---
+<br>
 
 ### Q11: The malware downloads a file that contains the Cerber ransomware cryptor code. What is the name of that file?
 
@@ -269,6 +282,7 @@ For this one we know that Bob's machine would have to make a connection to downl
 ![Q1 - Network tag confirming IP association to we8105desk](screenshots/sol.png)
 
 ---
+<br>
 
 ### Q12: Now that you know the name of the ransomware's encryptor file, what obfuscation technique does it likely use?
 
