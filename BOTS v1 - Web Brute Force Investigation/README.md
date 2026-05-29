@@ -4,14 +4,12 @@
 This documents an investigation into a website defacement attack against imreallynotbatman.com, a Wayne Enterprises web property. The attack was carried out by the threat actor group Po1s0n1vy. All activity was investigated using Splunk with data sources including Suricata IDS, Fortigate firewall, stream:http, and Sysmon logs.
 
 ---
-<br>
 
 ## Context: 
 
 ![Q1 Scan Detection](screenshots/webdeface.png)
 
 ---
-<br>
 
 
 ## Lab Environment
@@ -87,7 +85,6 @@ Several strong behavioral indicators were identified during the investigation th
 | 22:19:11 | poisonivy-is-coming-for-you-batman.jpeg downloaded; site defaced |
 
 ---
-<br>
 
 ## Key Indicators of Compromise (IOCs)
 
@@ -109,11 +106,9 @@ Several strong behavioral indicators were identified during the investigation th
 ## Detection Summary
 The investigation revealed a multi-stage defacement attack against imreallynotbatman.com. Po1s0n1vy used Acunetix to scan the site and identify its Joomla CMS. A brute force attack from 23.22.63.114 against the Joomla admin panel identified the weak password "batman" after 92.17 seconds, after which 40.80.148.42 used those credentials to log in. The attacker uploaded a malicious executable (3791.exe) via the ExtPlorer file manager to establish persistence, then used it to issue an outbound request to their pre-staged hosting infrastructure at prankglassinebracket.jumpingcrab.com, downloading the defacement image. Suricata and Fortigate both detected malicious activity but allowed it through due to misconfigured policies.
 ---
-<br>
 
 ## Investigation
 ---
-<br>
 
 ### Q1: What is the likely IPv4 address of someone from the Po1s0n1vy group scanning imreallynotbatman.com for web application vulnerabilities?
 
