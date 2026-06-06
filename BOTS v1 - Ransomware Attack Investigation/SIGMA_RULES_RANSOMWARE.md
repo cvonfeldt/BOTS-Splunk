@@ -62,12 +62,14 @@ level: high
 
 **Investigation:** Ransomware Attack (BOTS v1)
  
-**What it detects:** A DNS request to an external domain occurring within a short window after a burst of file modification events, which is typical behavior of ransomware completing its encryption phase and beaconing to C2 infrastructure. In the Cerber investigation, a DNS request to `cerberhhyed5frqa.xmfir0.win` was observed exactly 1.688 seconds after the encryption phase completed.
+**What it detects:** DNS requests to external domains using uncommon or high-risk TLDs (.win, .ru, .xyz, .top, .club), while filtering out known legitimate microsoft domains. Observed in Cerber ransomware post-encryption callback to cerberhhyed5frqa.xmfir0.win. 
+
+**Note:** Originally intended to make it outbound DNS requests to domains using high-risk TLDs after burst of file modification events, but Sigma doesn't allow for temporal correlation.
  
-**Why it's evasion-resistant:** This rule correlates two separate data sources - file system telemetry and DNS logs. Neither event alone is necessarily malicious, but the combination and timing is an extremely specific behavioral anomaly that is difficult for an attacker to avoid since the C2 callback is built into the malware's own post-encryption routine.
- 
-**Note:** This rule requires correlation across Sysmon file modification events (Event ID 2) and DNS logs. Implementation will vary by SIEM - the logic below is for the intent; you should tune to your specific environment. 
- 
+**Why it's evasion-resistant:** Flags outbound DNS activity to TLDs commonly associated with malicious infrastructure. Easy to implement, but higher false positive rate than a full temporal correlation approach.
+
+**Note:** If your SIEM supports temporal correlation across data sources, consider pairing this with a mass file modification detection to significantly improve specificity and reduce noise.
+
 ```yaml
 title: DNS Request Following Mass File Modification Event
 status: experimental
